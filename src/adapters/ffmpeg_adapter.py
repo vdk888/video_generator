@@ -33,12 +33,20 @@ class FFmpegAdapter(Renderer):
         local_ffmpeg = os.path.join(base_dir, "bin", "ffmpeg")
         ffmpeg_cmd = local_ffmpeg if os.path.exists(local_ffmpeg) else "ffmpeg"
 
+        # Prepare Input options
+        # If image, use -loop 1. If video, use -stream_loop -1.
+        input_args = []
+        if scene.video.file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+            input_args = ["-loop", "1", "-i", scene.video.file_path]
+        else:
+            input_args = ["-stream_loop", "-1", "-i", scene.video.file_path]
+
         cmd = [
             ffmpeg_cmd, "-y",
-            "-stream_loop", "-1", "-i", scene.video.file_path,
+            *input_args,
             "-i", scene.audio.file_path,
             "-map", "0:v", "-map", "1:a",
-            "-c:v", "libx264", "-preset", "ultrafast",
+            "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", # Force compatibility
             "-c:a", "aac", "-ar", "48000", "-ac", "2", # Force standard audio format
         ]
 

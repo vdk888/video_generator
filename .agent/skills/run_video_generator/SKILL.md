@@ -1,65 +1,74 @@
 ---
 name: run_video_generator
-description: Generates a video from a text script using a python based pipeline (Edge-TTS, Pexels, FFmpeg). Supports automated script generation via LLM.
+description: Generates a video from a text script using a python based pipeline. Supports automated formatting (LLM), custom media injection, and kinetic typography.
 ---
 
-# Run Video Generator (The Engine)
+# Video Engine (Bubble Brand)
 
-This skill generates educational videos adhering to the **Bubble Brand Identity**.
-It now features an **Automated Engine** that transforms raw text into a dynamic video script.
+This skill controls the **Video Generation Engine**, a system that transforms raw text or structured JSON into a high-quality, branded video.
 
-## Prerequisites
-- **Project Location**: `/Users/joris/Documents/video_generator`.
-- **Virtual Env**: `venv` exists.
-- **Environment (`.env`)**:
-  ```bash
-  PEXELS_API_KEY=...
-  OPENROUTER_API_KEY=...
-  OPENROUTER_MODEL=gpt-4o-mini
-  ```
+## Capabilities
 
-## Workflow: The "Engine" Automation
+1.  **Automated Enrichment ("The Brain")**:
+    - Takes raw text (e.g., Notion page).
+    - Uses LLM (OpenRouter) to segment text into rhythmic clips.
+    - Generates cinematic search queries for Pexels.
+    - Identifies "Dramatic Moments" for highlighting.
 
-Instead of manually editing JSON, you now feed the **Raw Text** (e.g., from Notion) to the engine.
+2.  **Kinetic Typography**:
+    - **Dramatic Highlights**: Keywords marked for emphasis appear **Huge (170px), Violet, and Centered** on screen.
+    - **Visual Dynamics**: The background video dims automatically to make the text pop.
 
-1.  **Prepare Input**:
-    Paste your article/script content into `raw_source.txt` in the project root.
+3.  **Media Injection (Overrides)**:
+    - You can force-insert **Video** or **Images** (png/jpg) at any point.
+    - Images are automatically converted to video loops.
 
-2.  **Run the Engine**:
-    ```bash
-    cd /Users/joris/Documents/video_generator
-    venv/bin/python main.py
+## Usage Workflows
+
+### 1. Automatic Generation (Text -> Video)
+Use this when you have a script or article and want the engine to do everything.
+
+1.  **Write/Paste** content into `raw_source.txt` (Project Root).
+2.  **Run**: `venv/bin/python main.py`
+3.  **Result**: `final_output.mp4`.
+
+### 2. Manual/Custom Injection (The "Director" Mode)
+Use this to modify a generated video or insert custom assets (logos, screenshots, specific clips).
+
+1.  **Edit `script.json`**:
+    Find the segment you want to change.
+    
+    *Example: Inserting an OpenAI Logo*
+    ```json
+    {
+      "text": "OpenAI changed the world.",
+      "custom_media_path": "/Users/joris/Downloads/openai_logo.png",
+      "highlight_word": "OpenAI"
+    }
     ```
+    - `custom_media_path`: Absolute path to your file (Video or Image).
+    - `highlight_word`: (Optional) Text to display in Kinetic Typography over the image.
 
-3.  **What Happens Automatically**:
-    - **Appears**: The `OpenRouterAdapter` reads `raw_source.txt`.
-    - **Segments**: Breaks long paragraphs into rhythmic, short lines (1-4s).
-    - **Imagines**: Replaces generic concepts ("AI") with specific visual queries ("glowing blue neural network").
-    - **Highlights**: Selects the punchiest keyword for Violet highlighting.
-    - **Generates**: Produces `script.json` automatically.
-    - **Renders**: Downloads media, generates speech (ASS subtitles), and compiles the video.
+2.  **Run**: `venv/bin/python main.py`
+    (The engine detects `script.json` exists and skips the LLM generation to preserve your edits).
 
-4.  **Output**:
-    Final video at `/Users/joris/Documents/video_generator/final_output.mp4`.
+### 3. Agentic Workflow ("Talk to Me")
+You (the Agent) can perform these edits for the user:
+- **User**: "Add the OpenAI logo when it talks about GPT-3."
+- **Agent Action**:
+    1.  Locate the image (or download it).
+    2.  Read `script.json`.
+    3.  Find the segment discussing "GPT-3".
+    4.  Update the JSON object with `custom_media_path`.
+    5.  Run `venv/bin/python main.py`.
 
-## Manual Mode (Legacy)
-If you want to manually edit the script:
-1.  Delete or rename `raw_source.txt`.
-2.  Edit `script.json` manually (see format below).
-3.  Run `venv/bin/python main.py`.
+## Technical Specs
+- **Resolution**: 1920x1080 (HD).
+- **Audio**: AAC, 48kHz, Stereo (normalized).
+- **Format**: `.mp4` (H.264, yuv420p for max compatibility).
+- **Subtitles**: ASS format (Inter Font, Bottom).
+- **Outro**: Branded logo on white, 350px width.
 
-### Script Format (`script.json`)
-```json
-{
-  "type": "speech",
-  "text": "Spoken narration.",
-  "search_query": "cinematic visual description",
-  "highlight_word": "keyword"
-}
-```
-*   `highlight_word`: Trigger for **Bubble Violet** (`#667eea`) glow.
-
-## Technical Details
-- **Subtitles**: ASS Format (Inter Font, White Text, Black Outline).
-- **Outro**: Resized logo (350px) on White Background.
-- **Audio Service**: Edge-TTS (Vivienne Voice).
+## Troubleshooting
+- **Frozen Images**: Fixed by forcing `yuv420p` pixel format.
+- **High CPU**: If `main.py` hangs, run `pkill -f ffmpeg` to clear zombie processes.

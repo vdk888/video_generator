@@ -22,7 +22,8 @@ class GenerateVideoUseCase:
                 text=item["text"], 
                 search_query=item.get("search_query", ""), 
                 type=item.get("type", "speech"),
-                highlight_word=item.get("highlight_word")
+                highlight_word=item.get("highlight_word"),
+                custom_media_path=item.get("custom_media_path")
             ) for item in raw_script
         ]
         
@@ -50,8 +51,14 @@ class GenerateVideoUseCase:
             print(f"Audio generated: {audio_asset.duration}s")
             
             # B. Get Media
-            # Adapter now handles caching/existence check
-            video_asset = self.media.search_video(line.search_query, video_raw_path, audio_asset.duration)
+            if line.custom_media_path and os.path.exists(line.custom_media_path):
+                print(f"Using Custom Media: {line.custom_media_path}")
+                # Create VideoAsset directly
+                from src.domain.models import VideoAsset
+                video_asset = VideoAsset(file_path=line.custom_media_path)
+            else:
+                # Adapter now handles caching/existence check
+                video_asset = self.media.search_video(line.search_query, video_raw_path, audio_asset.duration)
             
             # C. Render Scene
             scene = Scene(

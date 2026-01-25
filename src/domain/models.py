@@ -7,6 +7,7 @@ class ScriptLine:
     search_query: str = ""
     type: str = "speech" # "speech" or "title"
     highlight_word: Optional[str] = None
+    custom_media_path: Optional[str] = None
 
 @dataclass
 class AudioAsset:
