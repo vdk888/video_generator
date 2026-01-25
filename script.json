@@ -10,38 +10,38 @@
   {
     "type": "speech",
     "text": "Bienvenue dans ce voyage au cœur de l'intelligence artificielle.",
-    "search_query": "immersive digital landscape with neural patterns",
-    "highlight_word": "voyage"
+    "search_query": "glowing neural network with sparks",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "De Terminator à ChatGPT, comment sommes-nous passés de la science-fiction à votre quotidien ?",
-    "search_query": "science fiction montage with futuristic visuals",
-    "highlight_word": "science-fiction"
+    "search_query": "science fiction futuristic city",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Ce n'est pas de la magie, c'est juste beaucoup de maths, et quelques révolutions.",
-    "search_query": "dark environment with glowing mathematical equations",
-    "highlight_word": "maths"
+    "search_query": "mathematics equations visualized",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Tout commence vraiment vers 2012.",
-    "search_query": "timeline of technological advancements",
-    "highlight_word": "commence"
+    "search_query": "year 2012 digital visual",
+    "highlight_word": "2012"
   },
   {
     "type": "speech",
     "text": "Avant cela, la reconnaissance faciale était rudimentaire.",
-    "search_query": "old surveillance footage with pixelated faces",
-    "highlight_word": "rudimentaire"
+    "search_query": "facial recognition glitch effect",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "L'IA manquait de puissance et de méthode.",
-    "search_query": "dimly lit lab with old computers",
-    "highlight_word": "manquait"
+    "search_query": "powerful artificial intelligence concept",
+    "highlight_word": null
   },
   {
     "type": "title",
@@ -50,38 +50,38 @@
   {
     "type": "speech",
     "text": "Mais en 2012, c'est l'étincelle.",
-    "search_query": "spark igniting with vibrant colors",
-    "highlight_word": "étincelle"
+    "search_query": "spark igniting technology",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Une équipe de chercheurs, supervisée par Geoffrey Hinton, écrase la compétition ImageNet avec AlexNet.",
-    "search_query": "team of researchers celebrating a victory",
-    "highlight_word": "écrase"
+    "search_query": "team of researchers working intently",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Ils prouvent que le Deep Learning fonctionne redoutablement bien.",
-    "search_query": "visual representation of deep learning processes",
-    "highlight_word": "prouvent"
+    "search_query": "deep learning data visualization",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Le deep learning s'inspire de notre cerveau.",
-    "search_query": "artistic visualization of a brain with neural networks",
-    "highlight_word": "cerveau"
+    "search_query": "brain neural connections close-up",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Ce sont des réseaux de neurones artificiels.",
-    "search_query": "macro shot of neural network connections",
-    "highlight_word": "réseaux"
+    "search_query": "artificial neural network diagram",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Comme un chat dans une image.",
-    "search_query": "cute cat hidden in complex visuals",
-    "highlight_word": "chat"
+    "search_query": "cat image recognition technology",
+    "highlight_word": null
   },
   {
     "type": "title",
@@ -89,57 +89,51 @@
   },
   {
     "type": "speech",
-    "text": "Puis, en 2017, une nouvelle rupture.",
-    "search_query": "breaking news concept with dramatic effects",
-    "highlight_word": "rupture"
+    "text": "Puis, en 2017, une nouvelle rupture : les chercheurs de Google publient 'Attention is all you need'.",
+    "search_query": "breakthrough technology research lab",
+    "highlight_word": null
   },
   {
     "type": "speech",
-    "text": "Les chercheurs de Google publient 'Attention is all you need'.",
-    "search_query": "Google headquarters with researchers working",
-    "highlight_word": "publient"
-  },
-  {
-    "type": "speech",
-    "text": "Ils inventent le Transformer.",
-    "search_query": "illustration of transformative technology",
-    "highlight_word": "inventent"
-  },
-  {
-    "type": "speech",
-    "text": "C'est l'architecture qui va tout changer.",
-    "search_query": "dynamic architectural models of technology",
-    "highlight_word": "changer"
+    "text": "Ils inventent le Transformer. C'est l'architecture qui va tout changer.",
+    "search_query": "transformer architecture visualization",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Le Transformer peut analyser une phrase entière d'un coup.",
-    "search_query": "illustration of data processing in action",
-    "highlight_word": "analyser"
+    "search_query": "text analysis digital concept",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Il comprend le contexte et les liens entre les mots.",
-    "search_query": "abstract visualization of language connections",
-    "highlight_word": "comprend"
+    "search_query": "words connections and context",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "C'est la naissance des grands modèles de langage.",
-    "search_query": "birth of AI models visualized with light and energy",
-    "highlight_word": "naissance"
+    "search_query": "large language models graphics",
+    "highlight_word": null
   },
   {
     "type": "speech",
-    "text": "Cela nous mène à 2020 et au-delà.",
-    "search_query": "futuristic timeline leading to 2020",
-    "highlight_word": "mène"
+    "text": "Cela nous mène à 2020 et au-delà, avec GPT-3.",
+    "search_query": "year 2020 technology innovation",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "On découvre que plus on ajoute de données, plus l'IA devient capable.",
-    "search_query": "data flow visualization with increasing numbers",
-    "highlight_word": "capable"
+    "search_query": "data expansion visualization",
+    "highlight_word": null
+  },
+  {
+    "type": "speech",
+    "text": "Presque sans limite apparente.",
+    "search_query": "limitless technology concept",
+    "highlight_word": null
   },
   {
     "type": "title",
@@ -148,25 +142,25 @@
   {
     "type": "speech",
     "text": "Aujourd'hui, l'IA générative est là.",
-    "search_query": "showcasing generative AI applications",
-    "highlight_word": "générative"
+    "search_query": "generative AI creativity expression",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Elle écrit, elle dessine, elle code.",
-    "search_query": "AI creating art and writing",
-    "highlight_word": "écrit"
+    "search_query": "AI creating art and code",
+    "highlight_word": null
   },
   {
     "type": "speech",
-    "text": "Et tout cela repose sur ces fondations posées en à peine une décennie.",
-    "search_query": "foundation stones being laid in technology",
-    "highlight_word": "fondations"
+    "text": "Tout cela repose sur ces fondations posées en à peine une décennie.",
+    "search_query": "foundations of technology decade",
+    "highlight_word": null
   },
   {
     "type": "speech",
     "text": "Fascinant, n'est-ce pas ?",
-    "search_query": "captivating visuals of technology's journey",
-    "highlight_word": "Fascinant"
+    "search_query": "fascinating technology concept",
+    "highlight_word": null
   }
 ]

@@ -24,18 +24,16 @@ class OpenRouterAdapter(ScriptGenerator):
         1.  **Rhythm (Segmentation)**:
             - Break the text into SHORT, PUNCHY segments (1-2 sentences max).
             - Mix durations: Some segments should be very short (1 sec), others normal (3-4 sec) for dynamic pacing.
-            - DO NOT output long paragraphs. Break them down.
 
         2.  **Visual Imagination (Search Queries)**:
             - For each segment, provide a `search_query` for Pexels.
-            - **CRITICAL**: Do NOT use generic terms like "AI" or "Man".
-            - Use **Cinematic Descriptions**: "glowing blue neural network macro", "cyberpunk city drone shot", "hacker typing green code night".
-            - The visual must MATCH the mood/content of the segment.
+            - **CRITICAL**: Do NOT use generic terms like "AI". Use **Cinematic Descriptions**: "glowing blue neural network macro", "cyberpunk city drone shot", "hacker typing green code night".
 
-        3.  **Highlights (Visual Engagement)**:
-            - For each segment, pick ONE (max 2) Impact Word to highlight.
+        3.  **Highlights (Dramatic Text)**:
+            - **SPARSELY** use `highlight_word` (Only for ~20% of segments).
+            - Triggers: Key dates ("2012"), Mind-blowing concepts ("Révolution"), or Shocking stats.
+            - If a segment is normal narration, set `highlight_word` to null.
             - The word must be in the spoken text.
-            - Field: `highlight_word`.
 
         4.  **Structure**:
             - If you see a major section change in the text, insert a "title" type item.

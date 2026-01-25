@@ -40,7 +40,65 @@ class FFmpegAdapter(Renderer):
             "-map", "0:v", "-map", "1:a",
             "-c:v", "libx264", "-preset", "ultrafast",
             "-c:a", "aac", "-ar", "48000", "-ac", "2", # Force standard audio format
-            "-vf", f"scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=25,{subtitles_filter}",
+        ]
+
+        # Filter Logic
+        # 1. Base: Scale/Crop Video
+        vf_chain = "scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=25"
+        
+        # 2. Dramatic Highlight (Kinetic Typography)
+        if scene.script_line.highlight_word:
+            # Dim Background: brightness -0.4
+            vf_chain += ",eq=brightness=-0.4"
+            
+            # Text Text
+            hw_text = scene.script_line.highlight_word
+            
+            # Clean text for FFmpeg
+            text_filename = f"hw_text_{os.getpid()}_{id(scene)}.txt"
+            text_path = os.path.join(os.path.dirname(scene.output_path), text_filename)
+            with open(text_path, "w", encoding="utf-8") as f:
+                f.write(hw_text)
+            
+            safe_text_path = text_path.replace(":", "\\:")
+            
+            # Font
+            font_path = "/System/Library/Fonts/Helvetica.ttc" # Default fallback
+            # Try to find Inter-ExtraBold
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            inter_bold = os.path.join(base_dir, "assets", "fonts", "extras", "ttf", "Inter-ExtraBold.ttf")
+            if os.path.exists(inter_bold):
+                font_path = inter_bold
+            
+            # DrawText: Huge (170), Violet (#667eea), Centered
+            # Violet in hex for ffmpeg: 0x667eea
+            drawtext = (
+                f"drawtext=fontfile='{font_path}':textfile='{safe_text_path}':"
+                f"fontcolor=0x667eea:fontsize=170:"
+                f"x=(w-text_w)/2:y=(h-text_h)/2"
+            )
+            
+            # Animation? Let's keep it static but impactful for now.
+            vf_chain += f",{drawtext}"
+            
+            # Cleanup later? Only if meaningful. For now we might leak small txt files if crash, but okay.
+        
+        # 3. Subtitles
+        # Check standard subtitles separately
+        if sub_path.endswith(".ass"):
+            # ASS contains style, but if we have dramatic text, do we want subtitles too?
+            # User said "full screen of that text...". Maybe hide subtitle if dramatic?
+            # "I didn't mean in subtitles".
+            # Let's keep subtitles for accessibility but maybe they will overlap if text is huge.
+            # Center huge text is middle. Subtitle is bottom. Should be safe.
+            vf_chain += f",subtitles='{sub_path}'" 
+        else:
+            style = "FontSize=16,PrimaryColour=&H00FFFFFF,OutlineColour=&H80000000,BorderStyle=3,Outline=1,Shadow=0,MarginV=30,Alignment=2,FontName=Inter"
+            vf_chain += f",subtitles='{sub_path}':force_style='{style}'"
+
+        cmd += ["-vf", vf_chain]
+        
+        cmd += [
             "-shortest",
             "-t", str(scene.audio.duration),
             scene.output_path
