@@ -1,57 +1,65 @@
 ---
 name: run_video_generator
-description: Generates a video from a text script using a python based pipeline (Edge-TTS, Pexels, FFmpeg). Use this when the user wants to create a new video or update the existing one.
+description: Generates a video from a text script using a python based pipeline (Edge-TTS, Pexels, FFmpeg). Supports automated script generation via LLM.
 ---
 
-# Run Video Generator
+# Run Video Generator (The Engine)
 
-This skill allows you to generate a video based on a JSON script, adhering to the **Bubble Brand Identity**.
+This skill generates educational videos adhering to the **Bubble Brand Identity**.
+It now features an **Automated Engine** that transforms raw text into a dynamic video script.
 
 ## Prerequisites
-- The project is located at `/Users/joris/Documents/video_generator`.
-- A virtual environment `venv` exists in that directory.
-- **Charte Graphique**: Refer to `Charte Graphique Bubble....md` in the project root for design decisions.
+- **Project Location**: `/Users/joris/Documents/video_generator`.
+- **Virtual Env**: `venv` exists.
+- **Environment (`.env`)**:
+  ```bash
+  PEXELS_API_KEY=...
+  OPENROUTER_API_KEY=...
+  OPENROUTER_MODEL=gpt-4o-mini
+  ```
 
-## Script Format (`script.json`)
-The script supports **Speech** (narration + stock video) and **Titles** (black text on white background transitions).
+## Workflow: The "Engine" Automation
 
-```json
-[
-  {
-    "type": "title",
-    "text": "PARTIE 1 : L'EVEIL"
-  },
-  {
-    "type": "speech",
-    "text": "Spoken narration here...",
-    "search_query": "visual search keywords"
-  }
-]
-```
-*Note*: `type` defaults to `"speech"` if omitted.
+Instead of manually editing JSON, you now feed the **Raw Text** (e.g., from Notion) to the engine.
 
-## Brand Identity Guidelines ("Bubble")
-- **Colors**: White Background, Black Text.
-- **Font**: Clean Sans-Serif (Arial/Helvetica/Inter).
-- **Audio Standards**: All outputs MUST be `AAC`, `48kHz`, `Stereo` to ensure seamless concatenation.
-- **Outro**: The file `vidu-video-....mov` is automatically normalized and appended as the **closing** logo animation.
+1.  **Prepare Input**:
+    Paste your article/script content into `raw_source.txt` in the project root.
 
-## Usage
-
-1.  **Update Script (Optional)**:
-    Modify `script.json` following the format above.
-
-2.  **Run Generation**:
-    Execute the main python script using the virtual environment.
+2.  **Run the Engine**:
     ```bash
     cd /Users/joris/Documents/video_generator
     venv/bin/python main.py
     ```
 
-3.  **Output**:
-    The final video will be at `/Users/joris/Documents/video_generator/final_output.mp4`.
+3.  **What Happens Automatically**:
+    - **Appears**: The `OpenRouterAdapter` reads `raw_source.txt`.
+    - **Segments**: Breaks long paragraphs into rhythmic, short lines (1-4s).
+    - **Imagines**: Replaces generic concepts ("AI") with specific visual queries ("glowing blue neural network").
+    - **Highlights**: Selects the punchiest keyword for Violet highlighting.
+    - **Generates**: Produces `script.json` automatically.
+    - **Renders**: Downloads media, generates speech (ASS subtitles), and compiles the video.
 
-## Troubleshooting
-- **Audio Loss**: If parts of the video are silent, ensure `FFmpegAdapter` filters enforce `-c:a aac -ar 48000 -ac 2`.
-- **FFmpeg Text Escaping**: If title rendering fails, check that `render_title_card` uses the `textfile` method to handle special characters safely.
-- **Permissions**: `chmod +x bin/ffmpeg` if the local binary is denied.
+4.  **Output**:
+    Final video at `/Users/joris/Documents/video_generator/final_output.mp4`.
+
+## Manual Mode (Legacy)
+If you want to manually edit the script:
+1.  Delete or rename `raw_source.txt`.
+2.  Edit `script.json` manually (see format below).
+3.  Run `venv/bin/python main.py`.
+
+### Script Format (`script.json`)
+```json
+{
+  "type": "speech",
+  "text": "Spoken narration.",
+  "search_query": "cinematic visual description",
+  "highlight_word": "keyword"
+}
+```
+*   `highlight_word`: Trigger for **Bubble Violet** (`#667eea`) glow.
+
+## Technical Details
+- **Subtitles**: ASS Format (Inter Font, White Text, Black Outline).
+- **Outro**: Resized logo (350px) on White Background.
+- **Audio Service**: Edge-TTS (Vivienne Voice).

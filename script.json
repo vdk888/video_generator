@@ -1,50 +1,172 @@
 [
   {
     "type": "title",
+    "text": "Comprendre l'IA - Les Fondations"
+  },
+  {
+    "type": "title",
     "text": "PARTIE 1 : L'EVEIL"
   },
   {
-    "text": "Bienvenue dans ce voyage au cœur de l'intelligence artificielle. De Terminator à ChatGPT, comment sommes-nous passés de la science-fiction à votre quotidien ? Ce n'est pas de la magie, c'est juste beaucoup de maths, et quelques révolutions.",
-    "search_query": "cinematic cyborg eye macro shot science fiction futuristic laboratory blue lights"
+    "type": "speech",
+    "text": "Bienvenue dans ce voyage au cœur de l'intelligence artificielle.",
+    "search_query": "immersive digital landscape with neural patterns",
+    "highlight_word": "voyage"
   },
   {
-    "text": "Tout commence vraiment vers 2012. Avant cela, la reconnaissance faciale était rudimentaire, souvent trompée par une simple paire de lunettes. L'IA manquait de puissance et de méthode.",
-    "search_query": "facial recognition scanning technology screen glitch effect security camera overlay"
+    "type": "speech",
+    "text": "De Terminator à ChatGPT, comment sommes-nous passés de la science-fiction à votre quotidien ?",
+    "search_query": "science fiction montage with futuristic visuals",
+    "highlight_word": "science-fiction"
+  },
+  {
+    "type": "speech",
+    "text": "Ce n'est pas de la magie, c'est juste beaucoup de maths, et quelques révolutions.",
+    "search_query": "dark environment with glowing mathematical equations",
+    "highlight_word": "maths"
+  },
+  {
+    "type": "speech",
+    "text": "Tout commence vraiment vers 2012.",
+    "search_query": "timeline of technological advancements",
+    "highlight_word": "commence"
+  },
+  {
+    "type": "speech",
+    "text": "Avant cela, la reconnaissance faciale était rudimentaire.",
+    "search_query": "old surveillance footage with pixelated faces",
+    "highlight_word": "rudimentaire"
+  },
+  {
+    "type": "speech",
+    "text": "L'IA manquait de puissance et de méthode.",
+    "search_query": "dimly lit lab with old computers",
+    "highlight_word": "manquait"
   },
   {
     "type": "title",
     "text": "PARTIE 2 : LE DEEP LEARNING"
   },
   {
-    "text": "Mais en 2012, c'est l'étincelle. Une équipe de chercheurs, supervisée par Geoffrey Hinton, écrase la compétition ImageNet avec AlexNet. Ils prouvent que le Deep Learning, couplé à la puissance des cartes graphiques, fonctionne redoutablement bien.",
-    "search_query": "computer graphics card cooling fan spinning macro shot high tech hardware glowing red"
+    "type": "speech",
+    "text": "Mais en 2012, c'est l'étincelle.",
+    "search_query": "spark igniting with vibrant colors",
+    "highlight_word": "étincelle"
   },
   {
-    "text": "Le deep learning s'inspire de notre cerveau. Ce sont des réseaux de neurones artificiels, des couches de calculs qui s'ajustent pour reconnaitre des motifs complexes, comme un chat dans une image.",
-    "search_query": "3d neural network connecting nodes glowing synapses brain visualization artificial intelligence"
+    "type": "speech",
+    "text": "Une équipe de chercheurs, supervisée par Geoffrey Hinton, écrase la compétition ImageNet avec AlexNet.",
+    "search_query": "team of researchers celebrating a victory",
+    "highlight_word": "écrase"
+  },
+  {
+    "type": "speech",
+    "text": "Ils prouvent que le Deep Learning fonctionne redoutablement bien.",
+    "search_query": "visual representation of deep learning processes",
+    "highlight_word": "prouvent"
+  },
+  {
+    "type": "speech",
+    "text": "Le deep learning s'inspire de notre cerveau.",
+    "search_query": "artistic visualization of a brain with neural networks",
+    "highlight_word": "cerveau"
+  },
+  {
+    "type": "speech",
+    "text": "Ce sont des réseaux de neurones artificiels.",
+    "search_query": "macro shot of neural network connections",
+    "highlight_word": "réseaux"
+  },
+  {
+    "type": "speech",
+    "text": "Comme un chat dans une image.",
+    "search_query": "cute cat hidden in complex visuals",
+    "highlight_word": "chat"
   },
   {
     "type": "title",
     "text": "PARTIE 3 : L'ERE DES TRANSFORMERS"
   },
   {
-    "text": "Puis, en 2017, une nouvelle rupture : les chercheurs de Google publient 'Attention is all you need'. Ils inventent le Transformer. C'est l'architecture qui va tout changer.",
-    "search_query": "abstract digital structure geometric shapes transforming glowing lines technology network"
+    "type": "speech",
+    "text": "Puis, en 2017, une nouvelle rupture.",
+    "search_query": "breaking news concept with dramatic effects",
+    "highlight_word": "rupture"
   },
   {
-    "text": "Contrairement aux anciens modèles qui lisaient mot à mot, le Transformer peut analyser une phrase entière d'un coup, comprendre le contexte et les liens entre les mots, même éloignés. C'est la naissance des grands modèles de langage.",
-    "search_query": "text code streaming matrix effect digital rain language processing data stream"
+    "type": "speech",
+    "text": "Les chercheurs de Google publient 'Attention is all you need'.",
+    "search_query": "Google headquarters with researchers working",
+    "highlight_word": "publient"
   },
   {
-    "text": "Cela nous mène à 2020 et au-delà, avec GPT-3 et l'ère des modèles massifs. On découvre que plus on ajoute de données et de puissance de calcul, plus l'IA devient capable, presque sans limite apparente.",
-    "search_query": "galaxy universe stars expanding data constellation unlimited potential cinematic space"
+    "type": "speech",
+    "text": "Ils inventent le Transformer.",
+    "search_query": "illustration of transformative technology",
+    "highlight_word": "inventent"
+  },
+  {
+    "type": "speech",
+    "text": "C'est l'architecture qui va tout changer.",
+    "search_query": "dynamic architectural models of technology",
+    "highlight_word": "changer"
+  },
+  {
+    "type": "speech",
+    "text": "Le Transformer peut analyser une phrase entière d'un coup.",
+    "search_query": "illustration of data processing in action",
+    "highlight_word": "analyser"
+  },
+  {
+    "type": "speech",
+    "text": "Il comprend le contexte et les liens entre les mots.",
+    "search_query": "abstract visualization of language connections",
+    "highlight_word": "comprend"
+  },
+  {
+    "type": "speech",
+    "text": "C'est la naissance des grands modèles de langage.",
+    "search_query": "birth of AI models visualized with light and energy",
+    "highlight_word": "naissance"
+  },
+  {
+    "type": "speech",
+    "text": "Cela nous mène à 2020 et au-delà.",
+    "search_query": "futuristic timeline leading to 2020",
+    "highlight_word": "mène"
+  },
+  {
+    "type": "speech",
+    "text": "On découvre que plus on ajoute de données, plus l'IA devient capable.",
+    "search_query": "data flow visualization with increasing numbers",
+    "highlight_word": "capable"
   },
   {
     "type": "title",
     "text": "CONCLUSION"
   },
   {
-    "text": "Aujourd'hui, l'IA générative est là. Elle écrit, elle dessine, elle code. Et tout cela repose sur ces fondations posées en à peine une décennie. Fascinant, n'est-ce pas ?",
-    "search_query": "futuristic robot artist drawing digital art artificial intelligence creativity human robot hand touch"
+    "type": "speech",
+    "text": "Aujourd'hui, l'IA générative est là.",
+    "search_query": "showcasing generative AI applications",
+    "highlight_word": "générative"
+  },
+  {
+    "type": "speech",
+    "text": "Elle écrit, elle dessine, elle code.",
+    "search_query": "AI creating art and writing",
+    "highlight_word": "écrit"
+  },
+  {
+    "type": "speech",
+    "text": "Et tout cela repose sur ces fondations posées en à peine une décennie.",
+    "search_query": "foundation stones being laid in technology",
+    "highlight_word": "fondations"
+  },
+  {
+    "type": "speech",
+    "text": "Fascinant, n'est-ce pas ?",
+    "search_query": "captivating visuals of technology's journey",
+    "highlight_word": "Fascinant"
   }
 ]

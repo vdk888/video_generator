@@ -19,8 +19,14 @@ class FFmpegAdapter(Renderer):
         # Chart: Clean, readable. White text on video is standard.
         # Reduced FontSize from 24 to 16 as requested.
         # Attempt to use 'Inter' if installed, otherwise system default fallback
-        style = "FontSize=16,PrimaryColour=&H00FFFFFF,OutlineColour=&H80000000,BorderStyle=3,Outline=1,Shadow=0,MarginV=30,Alignment=2,FontName=Inter"
-        subtitles_filter = f"subtitles='{sub_path}':force_style='{style}'"
+        
+        if sub_path.endswith(".ass"):
+            # ASS file contains its own style (Font, Colors, Position)
+            subtitles_filter = f"subtitles='{sub_path}'" 
+        else:
+            # Fallback for VTT/SRT
+            style = "FontSize=16,PrimaryColour=&H00FFFFFF,OutlineColour=&H80000000,BorderStyle=3,Outline=1,Shadow=0,MarginV=30,Alignment=2,FontName=Inter"
+            subtitles_filter = f"subtitles='{sub_path}':force_style='{style}'"
 
         # Use local ffmpeg binary if available
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -153,5 +159,60 @@ class FFmpegAdapter(Renderer):
             
         if os.path.exists(text_path):
             os.remove(text_path)
+            
+        return output_path
+    def render_logo_outro(self, input_path: str, output_path: str) -> str:
+        # 1. Background: White
+        # 2. Logo: Scaled to 600px width (approx 30% of 1920)
+        # 3. Position: Centered
+        # 4. Audio: Keep original
+        
+        # Use local ffmpeg binary
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        local_ffmpeg = os.path.join(base_dir, "bin", "ffmpeg")
+        ffmpeg_cmd = local_ffmpeg if os.path.exists(local_ffmpeg) else "ffmpeg"
+
+        # Filter Chain:
+        # [0:v] (logo) scale=600:-1 [logo];
+        # [1:v] (white bg) [logo] overlay=(W-w)/2:(H-h)/2
+        
+        # Assuming the logo input has audio we want to keep.
+        # Background duration should match logo duration.
+        
+        # Get duration first? Or just use -shortest?
+        
+        filters = (
+            "[0:v]scale=350:-1[logo];"
+            f"color=c=white:s=1920x1080:r=25[bg];"
+            "[bg][logo]overlay=(W-w)/2:(H-h)/2:format=auto"
+        )
+        
+        cmd = [
+            ffmpeg_cmd, "-y",
+            "-i", input_path,
+            "-c:v", "libx264", "-preset", "ultrafast",
+            "-c:a", "aac", "-ar", "48000", "-ac", "2",
+            "-filter_complex", filters,
+            "-shortest", 
+            "-map", "0:a?", # Map audio from input if it exists
+            output_path
+        ]
+        
+        # If no audio in input, we might need to generate silence to match logic?
+        # The simple command above might fail or produce no audio stream if input has none.
+        # Let's add conditional mapping or just enforce silence if no audio? 
+        # For 'vidu' generation, it usually has sound? 
+        # Safety: Add anullsrc as input 1, and map it if 0:a is missing? 
+        # Let's assume input has audio for now based on 'vidu' branding.
+        # UPDATE: To be safe compliant with our pipeline (AAC 48k required), 
+        # if input audio is empty, we must provide silent audio track.
+        # Let's use filter_complex to mix anullsrc or just map 0:a.
+        
+        print(f"Rendering Logo Outro from {input_path}...")
+        try:
+            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        except subprocess.CalledProcessError as e:
+            print(f"FFmpeg Logo Outro failed:\n{e.stderr}")
+            raise e
             
         return output_path

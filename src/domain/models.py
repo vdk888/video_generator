@@ -6,6 +6,7 @@ class ScriptLine:
     text: str
     search_query: str = ""
     type: str = "speech" # "speech" or "title"
+    highlight_word: Optional[str] = None
 
 @dataclass
 class AudioAsset:

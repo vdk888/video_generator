@@ -21,7 +21,8 @@ class GenerateVideoUseCase:
             ScriptLine(
                 text=item["text"], 
                 search_query=item.get("search_query", ""), 
-                type=item.get("type", "speech")
+                type=item.get("type", "speech"),
+                highlight_word=item.get("highlight_word")
             ) for item in raw_script
         ]
         
@@ -45,7 +46,7 @@ class GenerateVideoUseCase:
             
             # A. Generate Audio & Subtitles
             # Check if exists to skip? For now regenerate to ensure subtitles are fresh if code changed
-            audio_asset = await self.tts.generate_audio(line.text, audio_path)
+            audio_asset = await self.tts.generate_audio(line.text, audio_path, line.highlight_word)
             print(f"Audio generated: {audio_asset.duration}s")
             
             # B. Get Media
@@ -69,7 +70,7 @@ class GenerateVideoUseCase:
         if os.path.exists(intro_raw):
             outro_normalized = os.path.join(self.config.assets_dir, "outro_normalized.mp4")
             if not os.path.exists(outro_normalized):
-                self.renderer.normalize_video(intro_raw, outro_normalized)
+                self.renderer.render_logo_outro(intro_raw, outro_normalized)
             scenes.append(outro_normalized)
             print("Outro added.")
 
