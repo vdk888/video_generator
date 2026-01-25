@@ -19,7 +19,10 @@ class PexelsAdapter(MediaProvider):
             # For robustness in this 'refactor', let's just assume 1920x1080 or use a helper.
             return VideoAsset(file_path=output_path, width=1920, height=1080)
 
-        url = f"https://api.pexels.com/videos/search?query={query}&per_page=1&orientation=landscape"
+        # Enforce Landscape (16:9 usually) and High Quality (Large/Medium)
+        # 'large' usually gives 4K or 1080p. 'medium' often 720p or 1080p. 
+        # Large is safer for maintaining 1080p target.
+        url = f"https://api.pexels.com/videos/search?query={query}&per_page=1&orientation=landscape&size=large"
         
         try:
             response = requests.get(url, headers=self.headers)
