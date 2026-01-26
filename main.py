@@ -36,13 +36,43 @@ async def main():
     from src.adapters.openrouter_adapter import OpenRouterAdapter
     script_gen = OpenRouterAdapter(openrouter_key, openrouter_model)
     
-    # NEW: Voice
-    # Was EdgeTTSAdapter. Now OpenAITTSAdapter (using same OpenRouter Key for audio)
-    # Model: "openai/gpt-audio-mini" (Audio capability)
-    from src.adapters.openai_tts_adapter import OpenAITTSAdapter
-    tts = OpenAITTSAdapter(openrouter_key, "openai/gpt-audio-mini") 
-    
-    use_case = GenerateVideoUseCase(tts, media, renderer, config)
+    # NEW: Voice - Provider selection via TTS_PROVIDER env var
+    # Options: "openai" (default), "elevenlabs", "edge"
+    tts_provider = os.getenv("TTS_PROVIDER", "openai").lower()
+
+    if tts_provider == "elevenlabs":
+        elevenlabs_key = os.getenv("ELEVENLABS_API_KEY")
+        if not elevenlabs_key:
+            print("ERROR: ELEVENLABS_API_KEY not found in environment")
+            return
+        elevenlabs_voice = os.getenv("ELEVENLABS_VOICE_ID", "EXAVITQu4vr4xnSDxMaL")  # Bella (female) by default
+        from src.adapters.elevenlabs_adapter import ElevenLabsAdapter
+        tts = ElevenLabsAdapter(elevenlabs_key, elevenlabs_voice)
+        print(f"Using ElevenLabs TTS (voice: {elevenlabs_voice})")
+    elif tts_provider == "edge":
+        tts = EdgeTTSAdapter()
+        print("Using Edge TTS (free)")
+    else:
+        # Default: OpenAI TTS via OpenRouter
+        from src.adapters.openai_tts_adapter import OpenAITTSAdapter
+        tts = OpenAITTSAdapter(openrouter_key, "openai/gpt-audio-mini")
+        print("Using OpenAI TTS (via OpenRouter)")
+
+    # NEW: Music Service
+    music = None
+    if config.enable_background_music:
+        from src.adapters.music_adapter import MusicAdapter
+        music = MusicAdapter(config.music_dir)
+        print(f"Music service enabled (mood: {config.music_mood})")
+
+    # NEW: Avatar Service (HeyGen)
+    avatar = None
+    if config.heygen_api_key:
+        from src.adapters.heygen_adapter import HeyGenAdapter
+        avatar = HeyGenAdapter(config.heygen_api_key)
+        print(f"HeyGen avatar service enabled (avatar: {config.heygen_default_avatar_id})")
+
+    use_case = GenerateVideoUseCase(tts, media, renderer, config, music, avatar)
     
     # B. Generate Video
     # Project paths

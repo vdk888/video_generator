@@ -8,7 +8,7 @@ An automated, "Clean Architecture" python pipeline that turns raw text into high
 -   **🎨 Cinematic Visuals**: Automatically fetches matching B-roll from Pexels using "Visual Imagination" queries.
 -   **💥 Kinetic Typography**: Highlights dramatic keywords with massive, centered, violet text overlays (Brand Identity).
 -   **🔧 Custom Control**: "Director Mode" allows enforcing specific manual images or videos in the timeline.
--   **🔊 Pro Audio**: High-quality TTS (Voice: Vivienne) mixed with background tracks.
+-   **🔊 Pro Audio**: Multiple TTS providers (OpenAI, ElevenLabs, Edge) with premium voices and background music mixing.
 -   **⚡ Branded**: Automated Intro/Outro logic, standard fonts (Inter), and colors.
 
 ## Installation
@@ -23,12 +23,24 @@ An automated, "Clean Architecture" python pipeline that turns raw text into high
     ```
 
 2.  **Environment Configuration**:
-    Create a `.env` file in the root directory:
+    Create a `.env` file in the root directory (see `.env.example`):
     ```bash
     PEXELS_API_KEY=your_pexel_key
     OPENROUTER_API_KEY=your_openrouter_key
     OPENROUTER_MODEL=gpt-4o-mini
+
+    # TTS Provider Selection (options: openai, elevenlabs, edge)
+    TTS_PROVIDER=openai
+
+    # ElevenLabs (optional, for premium TTS)
+    # ELEVENLABS_API_KEY=your_elevenlabs_key
+    # ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL
     ```
+
+    **TTS Provider Options**:
+    - `openai` - High-quality TTS via OpenRouter (default)
+    - `elevenlabs` - Premium natural voices (requires API key) - [Setup Guide](docs/ELEVENLABS_SETUP.md)
+    - `edge` - Free Microsoft Edge TTS
 
 3.  **Assets**:
     Ensure the `assets/` folder contains fonts (`Inter-ExtraBold.ttf`) and outro/intro media files.
