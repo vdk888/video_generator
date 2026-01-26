@@ -51,13 +51,43 @@ class GenerateVideoUseCase:
             print(f"Audio generated: {audio_asset.duration}s")
             
             # B. Get Media
-            if line.custom_media_path and os.path.exists(line.custom_media_path):
-                print(f"Using Custom Media: {line.custom_media_path}")
-                # Create VideoAsset directly
-                from src.domain.models import VideoAsset
-                video_asset = VideoAsset(file_path=line.custom_media_path)
+            if line.custom_media_path:
+                if os.path.exists(line.custom_media_path):
+                     print(f"Using Custom Media: {line.custom_media_path}")
+                     # Create VideoAsset directly
+                     from src.domain.models import VideoAsset
+                     video_asset = VideoAsset(file_path=line.custom_media_path)
+                else:
+                     print(f"WARNING: Custom media path not found: {line.custom_media_path}")
+                     print("Fallback: Creating Dramatic Text Scene (Luxury Bg + Text)")
+                     
+                     # 1. Search for a premium background
+                     # "abstract dark texture" or "luxury black background"
+                     fallback_query = "abstract dark luxury texture cinematic"
+                     video_asset = self.media.search_video(fallback_query, video_raw_path, audio_asset.duration)
+                     
+                     # 2. Force Dramatic Text Effect
+                     # The renderer draws 'highlight_word' huge on screen.
+                     # We set it to the full text (or the provided text) to ensure the "Text Over Image" effect.
+                     # Note: The renderer centers specific words. If we put the whole sentence, it might be too long for the huge font?
+                     # Let's keep the ORIGINAL highlight word if present, otherwise pick a key word?
+                     # OR, user said "image with the text over it".
+                     # If I set highlight_word=line.text, it displays the WHOLE text huge.
+                     # FFmpeg Adapter uses: fontsize=170. 
+                     # If text is long, this will go off screen.
+                     # Compromise: If highlight_word is set, use it. If not, use the first 3 words + "..."?
+                     # Or just trust the original script's highlight?
+                     # User said "text over it", implying the content. 
+                     # Let's assume the script has a highlight word for dramatic scenes.
+                     # If NOT, we force one.
+                     if not line.highlight_word:
+                        # Pick the longest word as a heuristic for "Subject"
+                        import re
+                        words = re.findall(r'\w+', line.text)
+                        if words:
+                            line.highlight_word = max(words, key=len)
             else:
-                # Adapter now handles caching/existence check
+                # Normal Pexels Search
                 video_asset = self.media.search_video(line.search_query, video_raw_path, audio_asset.duration)
             
             # C. Render Scene

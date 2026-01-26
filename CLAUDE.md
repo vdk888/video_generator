@@ -3,6 +3,20 @@
 ## Project: Bubble Video Engine
 A Python-based automated video generation pipeline using Clean Architecture.
 
+## End Vision
+A zero-edit AI video pipeline producing broadcast-quality content:
+- **Voice**: OpenAI TTS / ElevenLabs (high-quality, natural)
+- **Avatar**: HeyGen integration for talking head segments
+- **B-Roll**: Pexels stock footage with semantic search
+- **Structure**: Hook → Parts → CTA → Outro
+- **Polish**: Transitions, background music, kinetic typography
+- **Branding**: Consistent intro/outro, logo, color palette
+
+**Key Documents**:
+- `VIDEO_BIBLE.md` - Production guidelines, timing, visual grammar
+- `END_STATE_VISION.md` - Full vision and implementation roadmap
+- `Charte Graphique Bubble...md` - Official brand guidelines (colors, fonts, logo)
+
 ## Commands
 - **Run Engine**: `venv/bin/python main.py` (Reads `raw_source.txt` or `script.json`)
 - **Run Tests**: `venv/bin/python test_override.py` (Isolated custom media test)

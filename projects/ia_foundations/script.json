@@ -1,0 +1,84 @@
+[
+    {
+        "type": "title",
+        "text": "PARTIE 1 : LA REVOLUTION"
+    },
+    {
+        "type": "speech",
+        "text": "De Terminator à ChatGPT. Comment la science-fiction est-elle devenue notre quotidien ?",
+        "search_query": "futuristic cyborg looking at camera cinematic",
+        "highlight_word": "quotidien"
+    },
+    {
+        "type": "speech",
+        "text": "Spoiler : ce n'est pas de la magie, c'est juste... beaucoup de maths.",
+        "search_query": "complex math equations glowing floating in air",
+        "highlight_word": "maths"
+    },
+    {
+        "type": "title",
+        "text": "PARTIE 2 : 2012, LE BIG BANG"
+    },
+    {
+        "type": "speech",
+        "text": "Tout commence en 2012. Le Big Bang de l'IA.",
+        "search_query": "big bang explosion digital universe",
+        "highlight_word": "2012"
+    },
+    {
+        "type": "speech",
+        "text": "Une équipe écrase la compétition avec le Deep Learning. C'est comme apprendre à un ordinateur à voir.",
+        "search_query": "computer vision scanning eye hud",
+        "highlight_word": "voir"
+    },
+    {
+        "type": "speech",
+        "text": "On ne lui décrit plus un chat. On lui montre un million de chats, et il se débrouille.",
+        "search_query": "cat looking at camera close up cinematic",
+        "highlight_word": null
+    },
+    {
+        "type": "title",
+        "text": "PARTIE 3 : 2017, LE LANGAGE"
+    },
+    {
+        "type": "speech",
+        "text": "Puis, 2017. Google invente le Transformer. Le T de ChatGPT.",
+        "search_query": "google server room futuristic blue lights",
+        "highlight_word": "Transformer"
+    },
+    {
+        "type": "speech",
+        "text": "Avant, l'IA lisait mot à mot. Maintenant, elle comprend tout le contexte d'un coup.",
+        "search_query": "network connections glowing neural map",
+        "highlight_word": "contexte"
+    },
+    {
+        "type": "speech",
+        "text": "C'est la clé qui a permis aux machines de parler.",
+        "search_query": "ai robot speaking microphone cinematic",
+        "highlight_word": "parler"
+    },
+    {
+        "type": "title",
+        "text": "PARTIE 4 : L'EXPLOSION"
+    },
+    {
+        "type": "speech",
+        "text": "2022. L'explosion. ChatGPT arrive.",
+        "search_query": "nuclear explosion shockwave digital",
+        "highlight_word": "ChatGPT"
+    },
+    {
+        "type": "speech",
+        "text": "L'IA ne fait plus juste classer. Elle crée. Elle imagine.",
+        "search_query": "ai artist painting digital canvas glowing brush",
+        "highlight_word": "crée"
+    },
+    {
+        "type": "speech",
+        "text": "Bienvenue dans l'ère de l'intelligence générative.",
+        "search_query": "futuristic city skyline sunrise cinematic",
+        "highlight_word": "générative"
+    }
+]

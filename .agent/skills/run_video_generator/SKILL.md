@@ -54,19 +54,63 @@ Use this to modify a generated video or insert custom assets (logos, screenshots
 
 ### 3. Agentic Workflow ("Talk to Me")
 You (the Agent) can perform these edits for the user:
-- **User**: "Add the OpenAI logo when it talks about GPT-3."
-- **Agent Action**:
-    1.  Locate the image (or download it).
-    2.  Read `script.json`.
-    3.  Find the segment discussing "GPT-3".
-    4.  Update the JSON object with `custom_media_path`.
-    5.  Run `venv/bin/python main.py`.
+    -   **Generates**: Produces `script.json` automatically using the **Bubble Persona**.
+    -   **Renders**: Downloads media, generates speech (ASS subtitles), and compiles the video.
 
-## Technical Specs
-- **Resolution**: 1920x1080 (HD).
-- **Audio**: AAC, 48kHz, Stereo (normalized).
-- **Format**: `.mp4` (H.264, yuv420p for max compatibility).
-- **Subtitles**: ASS format (Inter Font, Bottom).
+4.  **Output**:
+    Final video at `/Users/joris/Documents/video_generator/final_output.mp4`.
+
+## The Bubble Tone (Writing Guidelines)
+Whether you are editing manually or prompting an agent, follow these rules:
+
+1.  **Analogy First**: Explain complex topics using everyday concepts (e.g., "The CPU is the brain, the RAM is the workbench").
+2.  **Structure**: Break content into explicit parts ("Partie 1", "Partie 2").
+3.  **Accessible Voice**:
+    -   Address the viewer directly ("Vous").
+    -   Use hooks: "Spoiler: it's simple," "Let's take 5 minutes."
+    -   Be reassuring yet authoritative.
+4.  **Visual Metaphors**: When choosing B-roll, match the *analogy*, not the literal tech term.
+
+## Audio Engine (New)
+The system now uses **OpenAI High-Quality TTS** (`gpt-audio-mini` / `tts-1-hd`) for native-sounding French narration.
+-   **Requires**: `OPENAI_API_KEY` in `.env` (or valid OpenRouter Audio support).
+-   **Cost**: extremely low (~$0.01/min), but much higher quality than EdgeTTS.
+-   **Fallback**: If no key provided, it *could* fallback to robotic EdgeTTS (if configured), but OpenAI is default.
+
+## Project Isolation
+The system now supports project folders to keep assets organized.
+-   **Structure**: `projects/<project_name>/`
+    -   `script.json` (The script)
+    -   `raw_source.txt` (Source text)
+    -   `assets/` (Generated videos/audio)
+    -   `final_output.mp4` (Result)
+    -   (Optional) Custom media files
+-   **Usage**: `venv/bin/python main.py --project <project_name>`
+    -   Default: `python main.py` uses `projects/default`
+
+## Robustness Features
+1.  **Subtitle Segmentation**: Long sentences are automatically split into dynamic, bite-sized chunks for better readability.
+2.  **Media Fallback**: If a `custom_media_path` in `script.json` is missing, the system **automatically falls back** to searching Pexels using the `search_query` or `text`.
+3.  **Audio Recovery**: Uses OpenAI High-Quality Voice with automatic WAV conversion.
+
+## Manual Mode (Director / Agentic)
+If you want to manually write the script (or have the Agent do it without the LLM):
+
+1.  **Create/Edit `projects/default/script.json` directly**.
+    (If this file exists, the Engine skips the automated OpenRouter step).
+
+2.  **Script Format**:
+
+### Agentic Workflow
+**User**: "Write a script about Quantum Computing using the Bubble Tone."
+**Agent**:
+1.  Read `SKILL.md` (this file) to understand the Tone.
+2.  Draft the content following the "Analogy First" rule.
+3.  Write the JSON directly to `script.json`.
+4.  Run the engine.
+
+## Technical Details
+-   **Subtitles**: ASS Format (Inter Font).
 - **Outro**: Branded logo on white, 350px width.
 
 ## Troubleshooting

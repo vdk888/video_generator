@@ -8,8 +8,14 @@ from src.app.use_cases import GenerateVideoUseCase
 
 async def main():
     # 1. Config
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--project", type=str, default="default", help="Project name (isolation folder)")
+    args = parser.parse_args()
+
+    # 1. Config
     try:
-        config = load_config()
+        config = load_config(args.project)
     except Exception as e:
         print(f"Config Error: {e}")
         return
@@ -30,14 +36,25 @@ async def main():
     from src.adapters.openrouter_adapter import OpenRouterAdapter
     script_gen = OpenRouterAdapter(openrouter_key, openrouter_model)
     
+    # NEW: Voice
+    # Was EdgeTTSAdapter. Now OpenAITTSAdapter (using same OpenRouter Key for audio)
+    # Model: "openai/gpt-audio-mini" (Audio capability)
+    from src.adapters.openai_tts_adapter import OpenAITTSAdapter
+    tts = OpenAITTSAdapter(openrouter_key, "openai/gpt-audio-mini") 
+    
     use_case = GenerateVideoUseCase(tts, media, renderer, config)
     
-    # 3. Execution
-    # A. Check for raw source
-    raw_source_path = "raw_source.txt"
-    script_json_path = "script.json"
+    # B. Generate Video
+    # Project paths
+    project_dir = os.path.dirname(config.final_video_path)
+    raw_source_path = os.path.join(project_dir, "raw_source.txt")
+    script_json_path = os.path.join(project_dir, "script.json")
     
-    if os.path.exists(raw_source_path):
+    print(f"Working in Project: {args.project} ({project_dir})")
+    
+    if os.path.exists(script_json_path):
+        print(f"Found existing {script_json_path}. Skipping LLM generation (Director Mode).")
+    elif os.path.exists(raw_source_path):
         print(f"Reading raw source from {raw_source_path}...")
         with open(raw_source_path, "r") as f:
             raw_text = f.read()
@@ -51,12 +68,11 @@ async def main():
             json.dump(enriched_script, f, indent=2, ensure_ascii=False)
         print(f"Script saved to {script_json_path}")
     else:
-        print("No raw_source.txt found. Using existing script.json if available.")
+        print(f"No script.json or raw_source.txt found in {project_dir}. Please add one.")
+        # Create dummy for convenience?
+        return
 
-    # B. Generate Video
-    # Assuming script.json is in project root for now, or use config to find it.
-    script_path = os.path.join(os.path.dirname(config.final_video_path), "script.json")
-    await use_case.execute(script_path)
+    await use_case.execute(script_json_path)
 
 if __name__ == "__main__":
     asyncio.run(main())

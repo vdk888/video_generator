@@ -1,0 +1,24 @@
+De Terminator à ChatGPT : comment l'IA est passée de la science-fiction à votre quotidien
+
+Avant de parler de ChatGPT, Claude ou Midjourney, prenons le temps de comprendre d'où vient tout ça. Spoiler : ce n'est pas de la magie, c'est juste beaucoup de maths... et quelques révolutions.
+
+1. 2012 : Le Big Bang (Deep Learning)
+Tout démarre vraiment en 2012. Une compétition d'images : ImageNet.
+Une équipe de chercheurs de Toronto écrase tout le monde avec une technique appelée le Deep Learning (Apprentissage Profond).
+Analogie : Imaginez qu'avant, pour qu'un ordinateur reconnaisse un chat, on devait lui décrire "oreilles pointues + moustaches".
+Avec le Deep Learning, on lui montre 1 million de photos de chats et on lui dit "débrouille-toi". Et il apprend tout seul.
+C'est le début de la "vision" par ordinateur.
+
+2. 2017 : L'invention du langage (Transformers)
+Google publie un papier de recherche : "Attention is all you need".
+Ils inventent le Transformer (le "T" de ChatGPT).
+Avant, l'IA lisait mot à mot (J'aime... le... chocolat).
+Avec le Transformer, l'IA lit toute la phrase d'un coup et comprend le contexte.
+C'est la clé qui a permis aux IA de parler et de comprendre le langage humain.
+
+3. 2022 : L'explosion (Generative AI)
+OpenAI sort ChatGPT. Le grand public découvre que l'IA ne fait plus juste "classer" (Ceci est un chat), elle peut "créer" (Dessine-moi un chat style Picasso).
+C'est le début de l'ère de l'Intelligence Artificielle Générative.
+
+Use case 1 : Reconnaissance faciale (Face ID)
+Avant 2012 : Reconnaissance faciale pourrie, Faux positifs constants

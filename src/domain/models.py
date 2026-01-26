@@ -14,6 +14,7 @@ class AudioAsset:
     file_path: str
     subtitle_path: Optional[str] = None
     duration: float = 0.0
+    word_timings: Optional[List[dict]] = None
 
 @dataclass
 class VideoAsset:
@@ -33,3 +34,5 @@ class ProjectConfig:
     assets_dir: str
     final_video_path: str
     pexels_api_key: str
+    openrouter_api_key: str = ""
+    openrouter_model: str = "gpt-4o-mini"

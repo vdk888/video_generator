@@ -1,0 +1,19 @@
+[
+    {
+        "type": "title",
+        "text": "TEST FALLBACK"
+    },
+    {
+        "type": "speech",
+        "text": "Cette scène devrait avoir une image personnalisée.",
+        "search_query": "nature",
+        "custom_media_path": "/path/to/non_existent_image.jpg",
+        "highlight_word": "personnalisée"
+    },
+    {
+        "type": "speech",
+        "text": "Et celle-ci n'a pas de mot clé, le système doit en choisir un.",
+        "search_query": "technology",
+        "custom_media_path": "/path/to/another_missing.jpg"
+    }
+]

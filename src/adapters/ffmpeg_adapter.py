@@ -133,10 +133,16 @@ class FFmpegAdapter(Renderer):
             "-f", "concat",
             "-safe", "0",
             "-i", list_file,
-            "-c", "copy",
+            # Switch from -c copy to re-encode to avoid timebase/sar mismatches
+            "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-ar", "48000", "-ac", "2",
             output_file
         ]
-        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        try:
+            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Concatenation failed. stderr: {e.stderr}")
+            raise e
         os.remove(list_file)
 
     def normalize_video(self, input_path: str, output_path: str) -> str:
@@ -207,7 +213,7 @@ class FFmpegAdapter(Renderer):
             ffmpeg_cmd, "-y",
             "-f", "lavfi", "-i", f"color=c=white:s=1920x1080:d={duration}", # White BG
             "-f", "lavfi", "-i", f"anullsrc=r=48000:cl=stereo:d={duration}", 
-            "-c:v", "libx264", "-preset", "ultrafast",
+            "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", # Fixed format
             "-c:a", "aac", "-ar", "48000", "-ac", "2", # Force standard audio
             "-vf", filters,
             "-map", "0:v", "-map", "1:a",
@@ -227,6 +233,7 @@ class FFmpegAdapter(Renderer):
             os.remove(text_path)
             
         return output_path
+
     def render_logo_outro(self, input_path: str, output_path: str) -> str:
         # 1. Background: White
         # 2. Logo: Scaled to 600px width (approx 30% of 1920)
@@ -256,7 +263,7 @@ class FFmpegAdapter(Renderer):
         cmd = [
             ffmpeg_cmd, "-y",
             "-i", input_path,
-            "-c:v", "libx264", "-preset", "ultrafast",
+            "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", # Fixed format
             "-c:a", "aac", "-ar", "48000", "-ac", "2",
             "-filter_complex", filters,
             "-shortest", 
