@@ -1,5 +1,5 @@
 # Implementation Log
-**Stack**: Python (Clean Architecture) + FFmpeg | **Updated**: 2026-01-26
+**Stack**: TypeScript + Remotion (migrating from Python) | **Updated**: 2026-01-27 (Phase 5)
 
 ## Project Patterns
 - **Backend structure**: Clean Architecture with ports/adapters pattern in `src/`
@@ -34,8 +34,60 @@
 - **Scene duration probe**: Use ffprobe to get durations, fallback to simple concat if probe fails
 - **Music mixing workflow**: Concat first, then add music in second pass (temp file pattern)
 - **Music looping**: Use `-stream_loop -1` for input + aloop filter + atrim to exact duration
+- **Remotion imports**: Use extension-less imports (`./Component` not `./Component.js`) for webpack compatibility
+- **Node polyfills**: Webpack 5+ requires explicit polyfills (path-browserify, url, os-browserify, crypto-browserify)
+- **Font loading**: Use @remotion/google-fonts for Inter font, fallback to CSS @import for browser compatibility
+- **Brand constants**: ALL styling values must come from src/brand.ts (no hardcoded colors/sizes)
+
+## Migration Progress
+- **Phase 1**: TypeScript scaffolding (types, config, Root.tsx) - COMPLETE
+- **Phase 2**: Service adapters (OpenRouter, TTS, HeyGen, Pexels, Music) - COMPLETE
+- **Phase 3**: Remotion compositions (BubbleVideo, SceneRouter, etc.) - COMPLETE
+- **Phase 4**: Orchestrator + main entry point - COMPLETE (2026-01-27)
+- **Phase 5**: Brand compliance audit + font loading - COMPLETE (2026-01-27)
+
+## Phase 4 TypeScript Files
+- **src/orchestrator.ts**: Main pipeline orchestrator (port of use_cases.py)
+  - `generateVideo(projectName)` - main entry point
+  - Handles: script loading/generation, asset processing, parallel TTS+video, music selection, Remotion rendering
+  - Scene routing: title (no assets), avatar (HeyGen), broll (TTS+Pexels)
+  - Director Mode: uses script.json if exists, else generates from raw_source.txt
+- **src/render.ts**: Remotion rendering wrapper
+  - `renderVideo(inputProps, outputPath)` - bundles + renders composition
+  - H.264/AAC output, yuv420p pixel format, progress tracking
+- **src/main.ts**: CLI entry point (port of main.py)
+  - Arg parsing (--project=NAME), error handling, usage help
+- **src/utils/audio.ts**: Audio utilities (ffprobe wrappers)
+  - `getAudioDuration(filePath)` - returns seconds
+- **src/utils/video.ts**: Video utilities (ffprobe wrappers)
+  - `getVideoDuration(filePath)`, `getVideoDimensions(filePath)`, `getVideoFrameRate(filePath)`
 
 ## Recent Changes
+- [2026-01-27]: TypeScript Phase 5 - Brand Compliance Audit & Font Loading
+  - Created: src/brand.ts (single source of truth for ALL brand styling constants)
+  - Modified: All composition files to use brand constants (no hardcoded values)
+  - Fixed: Subtitle highlight color to #667eea (violet) - was incorrectly #ea7e66 (orange) in Python version
+  - Implemented: Inter font loading via @remotion/google-fonts with fallback CSS @import
+  - Modified: Root.tsx to load Inter font (weights: 400, 600, 700, 800)
+  - Updated: All typography to use brand constants (KINETIC: 170px, TITLE_CARD: 90px, SUBTITLE: 60px)
+  - Updated: All colors from brand constants (PRIMARY_TEXT #000000, BACKGROUND #FFFFFF, ACCENT_VIOLET #667eea)
+  - Updated: All timing constants (TRANSITION_DURATION: 0.4s, MUSIC_FADE_DURATION: 2s)
+  - Fixed: Remotion webpack config - added Node polyfills (path-browserify, url, os-browserify, crypto-browserify)
+  - Fixed: Import syntax - removed .js extensions for webpack compatibility
+  - Verified: Video scaling (width: 100%, height: 100%, objectFit: 'cover') in all video components
+  - Brand compliance: 100% - all compositions now follow Charte Graphique exactly
+- [2026-01-27]: TypeScript Phase 4 - Orchestrator & Main Entry Point
+  - Created: src/orchestrator.ts (main pipeline - generateVideo function)
+  - Created: src/render.ts (Remotion bundling + rendering wrapper)
+  - Modified: src/main.ts (CLI entry point with arg parsing and error handling)
+  - Created: src/utils/audio.ts (getAudioDuration via ffprobe)
+  - Created: src/utils/video.ts (getVideoDuration, getVideoDimensions, getVideoFrameRate)
+  - Pipeline flow: Config → Script (load/generate) → Process scenes (parallel TTS+video) → Music → Render
+  - TTS provider selection: openai/elevenlabs/edge based on config
+  - Scene processing: title (no assets), avatar (HeyGen video), broll (TTS audio + Pexels video)
+  - Parallel asset generation: Promise.all for TTS + Pexels per scene
+  - Type safety: All functions typed, no 'any' types
+  - Error handling: Try/catch with fallbacks, helpful error messages
 - [2026-01-26]: Implemented HeyGen Avatar Adapter - AI talking head videos (Sprint 3-4)
   - Files: src/ports/interfaces.py (AvatarProvider protocol)
   - Created: src/adapters/heygen_adapter.py (async generation, polling, download, normalization)

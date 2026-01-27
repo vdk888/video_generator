@@ -1,0 +1,36 @@
+{
+  "name": "bubble-video-engine-ts",
+  "version": "1.0.0",
+  "description": "Bubble Video Engine - TypeScript + Remotion implementation",
+  "type": "module",
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "render": "tsx src/main.ts",
+    "upgrade": "remotion upgrade",
+    "test": "echo \"Tests not yet implemented\" && exit 0"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.410",
+    "@remotion/google-fonts": "^4.0.410",
+    "@remotion/renderer": "^4.0.410",
+    "@remotion/transitions": "^4.0.410",
+    "dotenv": "^16.4.5",
+    "remotion": "^4.0.410",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "crypto-browserify": "^3.12.1",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "url": "^0.11.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

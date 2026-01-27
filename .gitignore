@@ -5,3 +5,6 @@ __pycache__/
 assets/
 *.mp4
 .agent/
+node_modules/
+build/
+.claude/

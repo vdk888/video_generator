@@ -1,30 +1,30 @@
-# Architecture Flow: Bubble Video Engine
+# Architecture Flow: Bubble Video Engine (TypeScript + Remotion)
 
-## High-Level Architecture (Clean/Hexagonal)
+## High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                                    main.py                                      │
-│                              (Entry Point / DI)                                 │
+│                                   src/main.ts                                   │
+│                           (Entry Point / CLI Parser)                            │
 │                                                                                 │
 │  ┌───────────────────────────────────────────────────────────────────────────┐  │
-│  │                         GenerateVideoUseCase                              │  │
-│  │                        (src/app/use_cases.py)                             │  │
+│  │                         src/orchestrator.ts                               │  │
+│  │                     (Pipeline Orchestration Logic)                        │  │
 │  │                                                                           │  │
 │  │  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   │  │
-│  │  │  TTSProvider│   │MediaProvider│   │  Renderer   │   │AvatarProvider│  │  │
-│  │  │  (voice)    │   │  (B-roll)   │   │  (video)    │   │  (HeyGen)   │   │  │
+│  │  │   Services  │   │   Services  │   │   Services  │   │  Remotion   │   │  │
+│  │  │    (TTS)    │   │   (Media)   │   │  (Avatar)   │   │  (Render)   │   │  │
 │  │  └──────┬──────┘   └──────┬──────┘   └──────┬──────┘   └──────┬──────┘   │  │
 │  └─────────┼─────────────────┼─────────────────┼─────────────────┼──────────┘  │
 └────────────┼─────────────────┼─────────────────┼─────────────────┼──────────────┘
              │                 │                 │                 │
     ┌────────┴────────┐  ┌─────┴─────┐    ┌──────┴──────┐   ┌──────┴──────┐
-    │    ADAPTERS     │  │  ADAPTERS │    │   ADAPTERS  │   │   ADAPTERS  │
+    │    SERVICES     │  │  SERVICES │    │   SERVICES  │   │ COMPOSITIONS│
     ├─────────────────┤  ├───────────┤    ├─────────────┤   ├─────────────┤
-    │ OpenAITTSAdapter│  │PexelsAdapt│    │FFmpegAdapter│   │HeyGenAdapter│
-    │ ElevenLabsAdapt │  └───────────┘    └─────────────┘   └─────────────┘
-    │ EdgeTTSAdapter  │
-    └─────────────────┘
+    │ openai-tts.ts   │  │pexels.ts  │    │heygen.ts    │   │BubbleVideo  │
+    │ elevenlabs.ts   │  │music.ts   │    │             │   │SceneComp.   │
+    │ edge-tts.ts     │  └───────────┘    └─────────────┘   │TitleCard    │
+    └─────────────────┘                                      └─────────────┘
 ```
 
 ---
@@ -37,7 +37,8 @@
 │                                     │                                            │
 │                                     ▼                                            │
 │              ┌────────────────────────────────────────────┐                      │
-│              │         OpenRouterAdapter (LLM)            │                      │
+│              │    OpenRouter Service (LLM)                │                      │
+│              │    src/services/openrouter.ts              │                      │
 │              │  • Segmentation (rhythm chunks)            │                      │
 │              │  • Search queries (feeling, not literal)   │                      │
 │              │  • Highlight words (kinetic triggers)      │                      │
@@ -51,22 +52,7 @@
                                       │
                                       ▼
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                      STAGE 1: BRANDED INTRO (3s)                                 │
-│              ┌────────────────────────────────────────────┐                      │
-│              │            FFmpegAdapter                   │                      │
-│              │  render_branded_intro()                    │                      │
-│              │  • White background                        │                      │
-│              │  • Logo overlay (centered)                 │                      │
-│              │  • Fade-in animation                       │                      │
-│              └────────────────────────────────────────────┘                      │
-│                                     │                                            │
-│                                     ▼                                            │
-│                          intro_branded.mp4                                       │
-└──────────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│              STAGE 2: PROCESS EACH SCRIPT LINE (Loop)                            │
+│              STAGE 1: PROCESS EACH SCRIPT LINE (Loop)                            │
 │                                                                                  │
 │    ┌─────────────────────────────────────────────────────────────────────────┐   │
 │    │  FOR each line IN script.json:                                          │   │
@@ -82,18 +68,18 @@
 │    │       │                      │                        │                 │   │
 │    │       ▼                      ▼                        ▼                 │   │
 │    │  ┌──────────┐         ┌────────────┐          ┌─────────────────┐       │   │
-│    │  │FFmpeg    │         │HeyGenAdapt │          │  PARALLEL FLOW  │       │   │
-│    │  │Title Card│         │  (async)   │          │                 │       │   │
-│    │  │•White bg │         │•API call   │          │ ┌─────┬───────┐ │       │   │
-│    │  │•Black txt│         │•Poll status│          │ │     │       │ │       │   │
-│    │  │•Fade anim│         │•Download   │          │ ▼     ▼       ▼ │       │   │
+│    │  │Remotion  │         │HeyGen Svc  │          │  PARALLEL FLOW  │       │   │
+│    │  │TitleCard │         │  (async)   │          │                 │       │   │
+│    │  │component │         │•API call   │          │ ┌─────┬───────┐ │       │   │
+│    │  │(renders  │         │•Poll status│          │ │     │       │ │       │   │
+│    │  │ later)   │         │•Download   │          │ ▼     ▼       ▼ │       │   │
 │    │  └────┬─────┘         │•Normalize  │          │TTS  Media  Render│      │   │
-│    │       │               └─────┬──────┘          │     Fetch       │       │   │
+│    │       │               └─────┬──────┘          │  Service       │       │   │
 │    │       │                     │                 └─────────────────┘       │   │
 │    │       │                     │                        │                 │   │
 │    │       ▼                     ▼                        ▼                 │   │
-│    │  scene_i.mp4           scene_i.mp4            scene_i.mp4              │   │
-│    │  (3s title)           (avatar+audio)         (video+audio+subs)        │   │
+│    │    Scene object        Scene object             Scene object           │   │
+│    │  (metadata only)      (video+audio)          (audio+video assets)      │   │
 │    │                                                                         │   │
 │    └─────────────────────────────────────────────────────────────────────────┘   │
 │                                     │                                            │
@@ -103,25 +89,10 @@
                                       │
                                       ▼
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                      STAGE 3: BRANDED OUTRO (3-5s)                               │
+│                     STAGE 2: MUSIC SELECTION (Optional)                          │
 │              ┌────────────────────────────────────────────┐                      │
-│              │            FFmpegAdapter                   │                      │
-│              │  render_logo_outro()                       │                      │
-│              │  • Use provided outro video                │                      │
-│              │  • Logo overlay                            │                      │
-│              │  • Normalize format                        │                      │
-│              └────────────────────────────────────────────┘                      │
-│                                     │                                            │
-│                                     ▼                                            │
-│                      scenes.append(outro_normalized.mp4)                         │
-└──────────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                     STAGE 4: MUSIC SELECTION (Optional)                          │
-│              ┌────────────────────────────────────────────┐                      │
-│              │            MusicAdapter                    │                      │
-│              │  get_music_track(mood)                     │                      │
+│              │         Music Service                      │                      │
+│              │         src/services/music.ts              │                      │
 │              │  • Mood: ambient_cinematic, upbeat, etc.   │                      │
 │              │  • From: assets/music/{mood}/              │                      │
 │              └────────────────────────────────────────────┘                      │
@@ -132,26 +103,55 @@
                                       │
                                       ▼
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                 STAGE 5: CONCATENATE WITH TRANSITIONS                            │
+│                 STAGE 3: BUILD REMOTION INPUT PROPS                              │
 │              ┌────────────────────────────────────────────┐                      │
-│              │            FFmpegAdapter                   │                      │
-│              │  concat_scenes(scenes[], music_path)       │                      │
+│              │        src/orchestrator.ts                 │                      │
+│              │  Build BubbleVideoInputProps:              │                      │
+│              │  • scenes[] array                          │                      │
+│              │  • logo_path, intro/outro paths            │                      │
+│              │  • background_music_path                   │                      │
+│              │  • config (timing, transitions, etc.)      │                      │
+│              └────────────────────────────────────────────┘                      │
+│                                     │                                            │
+│                                     ▼                                            │
+│                            inputProps object                                     │
+└──────────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                 STAGE 4: RENDER WITH REMOTION                                    │
+│              ┌────────────────────────────────────────────┐                      │
+│              │         src/render.ts                      │                      │
+│              │  @remotion/renderer bundle()               │                      │
 │              │                                            │                      │
-│              │  VIDEO CHAIN:                              │                      │
-│              │  • xfade filter (0.4s transitions)         │                      │
-│              │  • All scenes linked with fades            │                      │
-│              │                                            │                      │
-│              │  AUDIO CHAIN:                              │                      │
-│              │  • acrossfade between scenes               │                      │
-│              │  • Music loop + trim to video length       │                      │
-│              │  • Music fade in (0.5s) / out (0.5s)       │                      │
-│              │  • Music volume -20dB                      │                      │
-│              │  • amix (voice + music)                    │                      │
-│              │                                            │                      │
+│              │  REMOTION COMPOSITION FLOW:                │                      │
+│              │  ┌──────────────────────────────────────┐  │                      │
+│              │  │  BubbleVideo.tsx (main)              │  │                      │
+│              │  │  • Calculates total duration         │  │                      │
+│              │  │  • Renders intro (if present)        │  │                      │
+│              │  │  • Maps scenes to <Sequence>s        │  │                      │
+│              │  │  • Each scene → SceneComposition     │  │                      │
+│              │  │  • Renders outro (if present)        │  │                      │
+│              │  │  • Adds background music track       │  │                      │
+│              │  └──────────────────────────────────────┘  │                      │
+│              │                 │                          │                      │
+│              │                 ▼                          │                      │
+│              │  ┌──────────────────────────────────────┐  │                      │
+│              │  │  SceneComposition.tsx (per scene)    │  │                      │
+│              │  │  • Routes by scene_type:             │  │                      │
+│              │  │    - title → TitleCard               │  │                      │
+│              │  │    - avatar → Video (HeyGen)         │  │                      │
+│              │  │    - broll → Video + Subtitles       │  │                      │
+│              │  │  • Overlays highlight text if set    │  │                      │
+│              │  │  • Syncs audio with video            │  │                      │
+│              │  └──────────────────────────────────────┘  │                      │
+│              │                 │                          │                      │
+│              │                 ▼                          │                      │
 │              │  OUTPUT FORMAT:                            │                      │
-│              │  • 1920x1080 @ 25fps                       │                      │
-│              │  • yuv420p pixel format                    │                      │
+│              │  • 1920x1080 @ 25fps (configurable)        │                      │
 │              │  • H.264 video / AAC audio                 │                      │
+│              │  • Crossfade transitions (via Remotion)    │                      │
+│              │  • Background music mixed at -20dB         │                      │
 │              └────────────────────────────────────────────┘                      │
 │                                     │                                            │
 │                                     ▼                                            │
@@ -177,81 +177,44 @@
 │  ┌──────────────────────────────────────────────────────────────────────────┐    │
 │  │                      PARALLEL PROCESSING                                 │    │
 │  │                                                                          │    │
-│  │  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────────┐   │    │
-│  │  │  1. TTS (async) │    │  2. MEDIA FETCH │    │  (waits for 1 & 2)  │   │    │
-│  │  │                 │    │                 │    │                     │   │    │
-│  │  │ TTSProvider     │    │ MediaProvider   │    │  3. RENDER SCENE    │   │    │
-│  │  │ .generate_audio │    │ .search_video   │    │                     │   │    │
-│  │  │                 │    │                 │    │  FFmpegAdapter      │   │    │
-│  │  │ ┌─────────────┐ │    │ ┌─────────────┐ │    │  .render_scene()    │   │    │
-│  │  │ │OpenAI TTS   │ │    │ │Pexels API   │ │    │                     │   │    │
-│  │  │ │or ElevenLabs│ │    │ │Search       │ │    │  • Loop video to    │   │    │
-│  │  │ │or Edge TTS  │ │    │ │Download HD  │ │    │    match audio dur  │   │    │
-│  │  │ └─────────────┘ │    │ │Filter 16:9  │ │    │  • Mix audio track  │   │    │
-│  │  │        │        │    │ └─────────────┘ │    │  • Burn ASS subs    │   │    │
-│  │  │        ▼        │    │        │        │    │  • Kinetic text     │   │    │
-│  │  │  ┌──────────┐   │    │        ▼        │    │    (if highlight)   │   │    │
-│  │  │  │audio.mp3 │   │    │  ┌──────────┐   │    │  • yuv420p output   │   │    │
-│  │  │  │audio.ass │   │    │  │video.mp4 │   │    │                     │   │    │
-│  │  │  │(subtitles│   │    │  │(raw HD)  │   │    │                     │   │    │
-│  │  │  └──────────┘   │    │  └──────────┘   │    │                     │   │    │
-│  │  └────────┬────────┘    └────────┬────────┘    └──────────┬──────────┘   │    │
-│  │           │                      │                        │              │    │
-│  │           └──────────────────────┴────────────────────────┘              │    │
-│  │                                  │                                       │    │
-│  │                                  ▼                                       │    │
-│  │                          scene_i.mp4                                     │    │
-│  │                    (complete rendered scene)                             │    │
+│  │  ┌─────────────────┐    ┌─────────────────┐                              │    │
+│  │  │  1. TTS (async) │    │  2. MEDIA FETCH │                              │    │
+│  │  │                 │    │                 │                              │    │
+│  │  │  TTS Service    │    │  Pexels Service │                              │    │
+│  │  │  (openai-tts,   │    │  src/services/  │                              │    │
+│  │  │   elevenlabs,   │    │  pexels.ts      │                              │    │
+│  │  │   or edge-tts)  │    │                 │                              │    │
+│  │  │                 │    │  • Search API   │                              │    │
+│  │  │  • Generate MP3 │    │  • Filter 16:9  │                              │    │
+│  │  │  • Get duration │    │  • Download HD  │                              │    │
+│  │  │        │        │    │        │        │                              │    │
+│  │  │        ▼        │    │        ▼        │                              │    │
+│  │  │  ┌──────────┐   │    │  ┌──────────┐   │                              │    │
+│  │  │  │audio.mp3 │   │    │  │video.mp4 │   │                              │    │
+│  │  │  │(duration)│   │    │  │(raw HD)  │   │                              │    │
+│  │  │  └──────────┘   │    │  └──────────┘   │                              │    │
+│  │  └────────┬────────┘    └────────┬────────┘                              │    │
+│  │           │                      │                                       │    │
+│  │           └──────────────────────┴───────────────────────┐               │    │
+│  │                                  │                       │               │    │
+│  │                                  ▼                       ▼               │    │
+│  │                          AudioAsset              VideoAsset              │    │
+│  │                     (file_path, duration)  (file_path, dimensions)       │    │
+│  │                                  │                       │               │    │
+│  │                                  └───────────┬───────────┘               │    │
+│  │                                              ▼                           │    │
+│  │                                        Scene object                      │    │
+│  │                                   (ready for Remotion)                   │    │
 │  └──────────────────────────────────────────────────────────────────────────┘    │
-└──────────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Kinetic Typography (Highlight) Flow
-
-```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│               KINETIC TYPOGRAPHY (when highlight_word present)                   │
 │                                                                                  │
-│  INPUT:                                                                          │
-│    video.mp4 (B-roll)                                                            │
-│    audio.mp3 (voice)                                                             │
-│    highlight_word: "transformer"                                                 │
-│                                                                                  │
-│  FFMPEG FILTER CHAIN:                                                            │
-│                                                                                  │
-│    ┌──────────────────────────────────────────────────────────────────────┐      │
-│    │  [0:v] ──► eq=brightness=-0.4 ──► [darkened]                        │      │
-│    │                                                                      │      │
-│    │                         (Background dimmed)                          │      │
-│    └──────────────────────────────────────────────────────────────────────┘      │
-│                                      │                                           │
-│                                      ▼                                           │
-│    ┌──────────────────────────────────────────────────────────────────────┐      │
-│    │  [text_image] ──► (generated PNG with "TRANSFORMER")                │      │
-│    │                                                                      │      │
-│    │  • Font: Inter-ExtraBold 170pt                                       │      │
-│    │  • Color: #667eea (Bubble Violet)                                    │      │
-│    │  • Position: Centered                                                │      │
-│    │  • Background: Transparent                                           │      │
-│    └──────────────────────────────────────────────────────────────────────┘      │
-│                                      │                                           │
-│                                      ▼                                           │
-│    ┌──────────────────────────────────────────────────────────────────────┐      │
-│    │  [darkened] + [text_image] ──► overlay ──► [final]                  │      │
-│    │                                                                      │      │
-│    │  Text overlaid on dimmed video                                       │      │
-│    └──────────────────────────────────────────────────────────────────────┘      │
-│                                      │                                           │
-│                                      ▼                                           │
-│    ┌──────────────────────────────────────────────────────────────────────┐      │
-│    │  + audio.mp3 ──► scene_i.mp4                                        │      │
-│    │                                                                      │      │
-│    │  (Also burns ASS subtitles for other text)                           │      │
-│    └──────────────────────────────────────────────────────────────────────┘      │
-│                                                                                  │
-│  OUTPUT: scene_i.mp4 with kinetic text overlay                                   │
+│  Later, during Remotion rendering:                                               │
+│  ┌──────────────────────────────────────────────────────────────────────────┐    │
+│  │  SceneComposition.tsx renders:                                           │    │
+│  │  • <Video> with video.mp4 (looped to audio duration)                     │    │
+│  │  • <Audio> with audio.mp3                                                │    │
+│  │  • <Subtitles> (word-by-word if available)                               │    │
+│  │  • <HighlightText> (if highlight_word present)                           │    │
+│  └──────────────────────────────────────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -269,7 +232,8 @@
 │  }                                                                               │
 │                                                                                  │
 │  ┌──────────────────────────────────────────────────────────────────────────┐    │
-│  │                         HeyGenAdapter (async)                            │    │
+│  │                    HeyGen Service (async)                                │    │
+│  │                    src/services/heygen.ts                                │    │
 │  │                                                                          │    │
 │  │  STEP 1: Create Video Request                                            │    │
 │  │  ┌────────────────────────────────────────────────────────────────────┐  │    │
@@ -296,23 +260,22 @@
 │  │  STEP 3: Download Video                                                  │    │
 │  │  ┌────────────────────────────────────────────────────────────────────┐  │    │
 │  │  │  GET video_url (from completed response)                           │  │    │
-│  │  │  Stream download → avatar_raw.mp4                                  │  │    │
+│  │  │  Stream download → avatar.mp4                                      │  │    │
 │  │  │  (URL expires in 7 days - must download immediately)               │  │    │
 │  │  └────────────────────────────────────────────────────────────────────┘  │    │
 │  │                              │                                           │    │
 │  │                              ▼                                           │    │
-│  │  STEP 4: Normalize Video                                                 │    │
+│  │  STEP 4: Get Video Metadata                                              │    │
 │  │  ┌────────────────────────────────────────────────────────────────────┐  │    │
-│  │  │  FFmpeg normalization:                                             │  │    │
-│  │  │  • Scale to 1920x1080 (pad if needed)                              │  │    │
-│  │  │  • Set framerate to 25fps                                          │  │    │
-│  │  │  • Convert to yuv420p                                              │  │    │
-│  │  │  • Audio: AAC 48kHz stereo                                         │  │    │
+│  │  │  Use ffprobe to extract:                                           │  │    │
+│  │  │  • Duration                                                        │  │    │
+│  │  │  • Dimensions                                                      │  │    │
+│  │  │  (HeyGen video already normalized to 1920x1080@25fps)              │  │    │
 │  │  └────────────────────────────────────────────────────────────────────┘  │    │
 │  │                              │                                           │    │
 │  │                              ▼                                           │    │
-│  │                        scene_i.mp4                                       │    │
-│  │                  (avatar video with voice)                               │    │
+│  │                        VideoAsset                                        │    │
+│  │                  (avatar video with embedded voice)                      │    │
 │  └──────────────────────────────────────────────────────────────────────────┘    │
 │                                                                                  │
 │  NOTE: Avatar scenes include their own audio (HeyGen TTS)                        │
@@ -326,40 +289,34 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                      MUSIC MIXING (in concat_scenes)                             │
+│                   MUSIC MIXING (in Remotion Composition)                         │
 │                                                                                  │
 │  INPUTS:                                                                         │
-│    video_with_voice.mp4  (concatenated scenes with voice)                        │
-│    background_music.mp3  (from MusicAdapter)                                     │
+│    scenes[] (each with voice audio)                                              │
+│    background_music_path (from Music Service)                                    │
 │                                                                                  │
-│  FFMPEG AUDIO FILTER CHAIN:                                                      │
+│  REMOTION AUDIO MIXING:                                                          │
 │                                                                                  │
 │    ┌──────────────────────────────────────────────────────────────────────┐      │
-│    │  [music] ──► aloop=loop=-1 ──► (infinite loop)                      │      │
-│    │                    │                                                 │      │
-│    │                    ▼                                                 │      │
-│    │            atrim=0:{video_duration} ──► (trim to video length)       │      │
-│    │                    │                                                 │      │
-│    │                    ▼                                                 │      │
-│    │            afade=t=in:d=0.5 ──► (fade in 0.5s)                       │      │
-│    │                    │                                                 │      │
-│    │                    ▼                                                 │      │
-│    │            afade=t=out:d=0.5:st={end-0.5} ──► (fade out 0.5s)        │      │
-│    │                    │                                                 │      │
-│    │                    ▼                                                 │      │
-│    │            volume=-20dB ──► [music_processed]                        │      │
-│    └──────────────────────────────────────────────────────────────────────┘      │
-│                                      │                                           │
-│                                      ▼                                           │
-│    ┌──────────────────────────────────────────────────────────────────────┐      │
-│    │  [voice] + [music_processed] ──► amix=inputs=2 ──► [final_audio]    │      │
+│    │  BubbleVideo.tsx composition:                                        │      │
 │    │                                                                      │      │
-│    │  (Voice at full volume, music at -20dB underneath)                   │      │
+│    │  1. Scene audio tracks (full volume)                                │      │
+│    │     • Each <SceneComposition> has <Audio> component                 │      │
+│    │     • Voice at 100% volume                                          │      │
+│    │                                                                      │      │
+│    │  2. Background music track (-20dB)                                  │      │
+│    │     • <Audio src={background_music_path} volume={0.01} />           │      │
+│    │     • Looped to full video duration                                 │      │
+│    │     • Mixed underneath voice automatically                          │      │
 │    └──────────────────────────────────────────────────────────────────────┘      │
 │                                      │                                           │
 │                                      ▼                                           │
 │    ┌──────────────────────────────────────────────────────────────────────┐      │
-│    │  [video] + [final_audio] ──► final_output.mp4                       │      │
+│    │  Remotion renderer handles:                                         │      │
+│    │  • Audio mixing (voice + music)                                     │      │
+│    │  • Video encoding (H.264)                                           │      │
+│    │  • Audio encoding (AAC, 48kHz, Stereo)                              │      │
+│    │  • Output to final_output.mp4                                       │      │
 │    └──────────────────────────────────────────────────────────────────────┘      │
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -370,53 +327,70 @@
 
 ```
 video_generator/
-├── main.py                          ← Entry point (DI container)
-├── .env                             ← API keys & config
-├── raw_source.txt                   ← Input text (or in projects/)
-├── script.json                      ← Generated/manual script
-├── final_output.mp4                 ← Output video
-│
 ├── src/
-│   ├── domain/
-│   │   └── models.py               ← ScriptLine, Scene, AudioAsset, VideoAsset
+│   ├── main.ts                       # Entry point (CLI)
+│   ├── orchestrator.ts               # Main pipeline orchestrator
+│   ├── config.ts                     # Config loader (loads .env + defaults)
+│   ├── render.ts                     # Remotion renderer wrapper
+│   ├── types.ts                      # TypeScript type definitions
 │   │
-│   ├── ports/
-│   │   └── interfaces.py            ← TTSProvider, MediaProvider, Renderer, etc.
+│   ├── services/                     # External service integrations
+│   │   ├── openrouter.ts             # LLM script generation
+│   │   ├── openai-tts.ts             # OpenAI TTS via OpenRouter
+│   │   ├── elevenlabs.ts             # ElevenLabs TTS
+│   │   ├── edge-tts.ts               # Free Edge TTS
+│   │   ├── heygen.ts                 # HeyGen avatar generation
+│   │   ├── pexels.ts                 # Pexels video search/download
+│   │   └── music.ts                  # Background music selection
 │   │
-│   ├── adapters/
-│   │   ├── ffmpeg_adapter.py        ← Video rendering, transitions, music
-│   │   ├── openrouter_adapter.py    ← LLM script enrichment
-│   │   ├── pexels_adapter.py        ← B-roll search & download
-│   │   ├── openai_tts_adapter.py    ← OpenAI/OpenRouter TTS
-│   │   ├── elevenlabs_adapter.py    ← ElevenLabs TTS
-│   │   ├── edge_tts_adapter.py      ← Free Edge TTS
-│   │   ├── heygen_adapter.py        ← AI avatar generation
-│   │   └── music_adapter.py         ← Background music selection
+│   ├── compositions/                 # Remotion React components
+│   │   ├── BubbleVideo.tsx           # Main composition (orchestrates all)
+│   │   ├── SceneComposition.tsx      # Individual scene renderer
+│   │   ├── TitleCard.tsx             # Title/intro card
+│   │   ├── IntroVideo.tsx            # Branded intro
+│   │   ├── OutroVideo.tsx            # Branded outro
+│   │   ├── HighlightText.tsx         # Kinetic typography overlay
+│   │   ├── Subtitles.tsx             # Subtitle renderer
+│   │   └── ...
 │   │
-│   ├── app/
-│   │   └── use_cases.py             ← GenerateVideoUseCase (orchestration)
+│   ├── utils/                        # Helper utilities
+│   │   ├── audio.ts                  # Audio duration extraction (ffprobe)
+│   │   └── video.ts                  # Video metadata extraction (ffprobe)
 │   │
-│   └── infra/
-│       └── config.py                ← Environment/config loading
+│   ├── Root.tsx                      # Remotion root (registers compositions)
+│   ├── BubbleVideo.tsx               # Alias for compositions/BubbleVideo
+│   └── index.ts                      # Remotion entry point
 │
-├── assets/
-│   ├── logo.png                     ← Brand logo
-│   ├── music/                       ← Background music library
+├── docs/                             # Documentation
+│   ├── ARCHITECTURE_FLOW.md          # This file
+│   ├── SETUP_GUIDE.md                # Installation and setup
+│   ├── REMOTION_COMPONENTS_GUIDE.md  # Composition details
+│   └── ELEVENLABS_SETUP.md           # ElevenLabs integration guide
+│
+├── assets/                           # Global assets
+│   ├── logo.png                      # Brand logo
+│   ├── music/                        # Background music library
 │   │   ├── ambient_cinematic/
 │   │   └── upbeat/
-│   └── (generated assets)
+│   └── (other global assets)
 │
-├── projects/                        ← Project isolation
+├── projects/                         # Project isolation
 │   └── {project_name}/
-│       ├── raw_source.txt
-│       ├── script.json
-│       ├── assets/
-│       └── final_output.mp4
+│       ├── raw_source.txt            # (Optional) Raw text input
+│       ├── script.json               # Generated or manual script
+│       ├── assets/                   # Generated assets
+│       │   ├── audio/                # TTS audio files
+│       │   └── video/                # Downloaded videos
+│       └── final_output.mp4          # Final rendered video
 │
-└── docs/
-    ├── VIDEO_BIBLE.md               ← Production guidelines
-    ├── END_STATE_VISION.md          ← Vision document
-    └── ARCHITECTURE_FLOW.md         ← This file
+├── .env                              # Environment variables (API keys)
+├── .env.example                      # Example config
+├── package.json                      # Dependencies and scripts
+├── tsconfig.json                     # TypeScript configuration
+├── remotion.config.ts                # Remotion configuration
+├── CLAUDE.md                         # Project overview
+├── VIDEO_BIBLE.md                    # Production guidelines
+└── END_STATE_VISION.md               # Vision document
 ```
 
 ---
@@ -425,30 +399,137 @@ video_generator/
 
 | Aspect | Value |
 |--------|-------|
-| **Resolution** | 1920x1080 (16:9) |
-| **Frame Rate** | 25 fps |
-| **Pixel Format** | yuv420p (required) |
-| **Video Codec** | H.264 (libx264) |
-| **Audio Codec** | AAC, 48kHz, Stereo |
-| **Transition** | xfade, 0.4s default |
-| **Music Volume** | -20dB under voice |
-| **Kinetic Font** | Inter-ExtraBold, 170pt |
+| **Framework** | Remotion 4.x (React-based video rendering) |
+| **Runtime** | Node.js 18+ with TypeScript |
+| **Resolution** | 1920x1080 (16:9) - configurable |
+| **Frame Rate** | 25 fps - configurable |
+| **Video Codec** | H.264 (libx264) - via Remotion |
+| **Audio Codec** | AAC, 48kHz, Stereo - via Remotion |
+| **Transitions** | Crossfade via @remotion/transitions |
+| **Music Volume** | -20dB (0.01 volume) under voice |
+| **Kinetic Font** | Inter-ExtraBold, configurable size |
 | **Kinetic Color** | #667eea (Bubble Violet) |
+| **Type Safety** | Full TypeScript with strict mode |
+
+---
+
+## Service Integration Summary
+
+| Service | Purpose | File | Required |
+|---------|---------|------|----------|
+| OpenRouter | LLM script generation | `services/openrouter.ts` | Yes (for auto-generation) |
+| OpenAI TTS | Text-to-speech | `services/openai-tts.ts` | Optional (can use Edge TTS) |
+| ElevenLabs | Premium TTS | `services/elevenlabs.ts` | Optional |
+| Edge TTS | Free TTS | `services/edge-tts.ts` | No API key needed |
+| HeyGen | AI avatars | `services/heygen.ts` | Optional |
+| Pexels | Stock footage | `services/pexels.ts` | Yes (for B-roll) |
+| Music | Background music | `services/music.ts` | Optional |
+
+---
+
+## Remotion Composition Hierarchy
+
+```
+<Composition id="BubbleVideo">
+  └── BubbleVideo.tsx (main orchestrator)
+      ├── <Sequence> intro (if present)
+      │   └── <IntroVideo />
+      │
+      ├── <Sequence> for each scene
+      │   └── <SceneComposition scene={...} />
+      │       ├── (if type === "title")
+      │       │   └── <TitleCard text={...} />
+      │       │
+      │       ├── (if scene_type === "avatar")
+      │       │   └── <Video src={avatar.mp4} />
+      │       │
+      │       └── (if scene_type === "broll")
+      │           ├── <Video src={broll.mp4} />
+      │           ├── <Audio src={audio.mp3} />
+      │           ├── <Subtitles text={...} />
+      │           └── (if highlight_word)
+      │               └── <HighlightText word={...} />
+      │
+      ├── <Sequence> outro (if present)
+      │   └── <OutroVideo />
+      │
+      └── <Audio src={background_music} volume={0.01} />
+          (looped to full video duration)
+</Composition>
+```
 
 ---
 
 ## Quick Commands
 
 ```bash
-# Generate video
-python main.py --project default
+# Preview in Remotion Studio
+npm run dev
+
+# Render video (default project)
+npm run render
+
+# Render specific project
+npm run render -- --project=myproject
+
+# Type check
+npx tsc --noEmit
 
 # Clean generated assets
-rm assets/scene_*.mp4 assets/audio_*.mp3 assets/video_raw_*.mp4
+rm -rf projects/*/assets/*
 
 # Kill stuck FFmpeg
 pkill -f ffmpeg
 
-# Switch TTS provider
-export TTS_PROVIDER=elevenlabs  # or openai, edge
+# Update Remotion
+npm run upgrade
 ```
+
+---
+
+## Development Workflow
+
+1. **Create script**: Write `raw_source.txt` or `script.json` in project folder
+2. **Generate assets**: Run orchestrator to generate audio/video assets
+3. **Preview**: Use `npm run dev` to preview in Remotion Studio
+4. **Iterate**: Adjust compositions, timing, or services
+5. **Render**: Run `npm run render` to generate final MP4
+6. **Review**: Check output in `projects/{project}/final_output.mp4`
+
+---
+
+## Error Handling Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Error Handling Strategy                                        │
+│                                                                 │
+│  1. Service Level (try/catch in services)                       │
+│     • Retry logic for transient failures                        │
+│     • Fallback to default values                                │
+│     • Log errors with context                                   │
+│                                                                 │
+│  2. Orchestrator Level (try/catch in main pipeline)             │
+│     • Catch service errors                                      │
+│     • Provide helpful error messages                            │
+│     • Clean up partial assets                                   │
+│                                                                 │
+│  3. Render Level (Remotion error handling)                      │
+│     • Validate input props                                      │
+│     • Catch composition errors                                  │
+│     • Report render failures                                    │
+│                                                                 │
+│  4. CLI Level (main.ts error handling)                          │
+│     • Catch all unhandled errors                                │
+│     • Display troubleshooting tips                              │
+│     • Exit with appropriate error code                          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+**For more details, see:**
+- `CLAUDE.md` - Project overview and commands
+- `SETUP_GUIDE.md` - Installation instructions
+- `REMOTION_COMPONENTS_GUIDE.md` - Composition details
+- `VIDEO_BIBLE.md` - Production guidelines
