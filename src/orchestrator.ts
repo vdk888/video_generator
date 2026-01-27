@@ -6,6 +6,7 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { loadConfig } from './config.js';
 import { renderVideo } from './render.js';
 import { getAudioDuration } from './utils/audio.js';
@@ -18,6 +19,14 @@ import type {
   AudioAsset,
   VideoAsset,
 } from './types.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/** Project root directory */
+function rootDir(): string {
+  return path.resolve(__dirname, '..');
+}
 
 // Import services
 import * as OpenRouter from './services/openrouter.js';
@@ -105,6 +114,16 @@ export async function generateVideo(projectName: string = 'default'): Promise<st
   await ensureDir(config.assets_dir);
   await ensureDir(path.join(config.assets_dir, 'audio'));
   await ensureDir(path.join(config.assets_dir, 'video'));
+
+  // Create public/ symlink so Remotion can serve project assets
+  const publicDir = path.join(rootDir(), 'public');
+  const projectAssetsLink = path.join(publicDir, 'project-assets');
+  await ensureDir(publicDir);
+  try {
+    await fs.unlink(projectAssetsLink);
+  } catch { /* doesn't exist yet */ }
+  await fs.symlink(config.assets_dir, projectAssetsLink);
+
   console.log('   ✅ Directories ready');
 
   // Step 4: Process script lines to generate scenes
@@ -143,15 +162,83 @@ export async function generateVideo(projectName: string = 'default'): Promise<st
 
   // Step 6: Build InputProps for Remotion
   console.log('\n🎬 Step 6: Building Remotion input props...');
+
+  // Transform absolute asset paths → staticFile-compatible relative paths
+  // Assets are symlinked at public/project-assets → config.assets_dir
+  const assetsBase = config.assets_dir;
+  const toStaticPath = (absPath: string | null | undefined): string | null => {
+    if (!absPath) return null;
+    if (absPath.startsWith(assetsBase)) {
+      const rel = path.relative(assetsBase, absPath);
+      return `project-assets/${rel}`;
+    }
+    // For files outside assets dir (e.g. logo), copy to public/
+    return absPath;
+  };
+
+  // Handle logo: copy to public/ if it exists
+  let logoStaticPath: string | null = null;
+  if (config.logo_path) {
+    try {
+      const logoDest = path.join(publicDir, 'logo.png');
+      await fs.copyFile(config.logo_path, logoDest);
+      logoStaticPath = 'logo.png';
+    } catch {
+      console.log('   ⚠️  Could not copy logo to public/');
+    }
+  }
+
+  // Handle background music: copy or symlink to public/
+  let musicStaticPath: string | null = null;
+  if (backgroundMusicPath) {
+    try {
+      const musicFilename = path.basename(backgroundMusicPath);
+      const musicDest = path.join(publicDir, musicFilename);
+      await fs.copyFile(backgroundMusicPath, musicDest);
+      musicStaticPath = musicFilename;
+    } catch {
+      console.log('   ⚠️  Could not copy music to public/');
+    }
+  }
+
+  // Transform scene asset paths
+  const remotionScenes: Scene[] = scenes.map((scene) => ({
+    ...scene,
+    audio: {
+      ...scene.audio,
+      file_path: toStaticPath(scene.audio.file_path) || scene.audio.file_path,
+    },
+    video: {
+      ...scene.video,
+      file_path: toStaticPath(scene.video.file_path) || scene.video.file_path,
+    },
+    output_path: scene.output_path,
+  }));
+
   const inputProps: BubbleVideoInputProps = {
-    scenes,
-    logo_path: config.logo_path,
-    intro_video_path: config.intro_video_path,
-    outro_video_path: config.outro_video_path,
-    background_music_path: backgroundMusicPath,
+    scenes: remotionScenes,
+    logo_path: logoStaticPath,
+    intro_video_path: config.intro_video_path ? toStaticPath(config.intro_video_path) : null,
+    outro_video_path: config.outro_video_path ? toStaticPath(config.outro_video_path) : null,
+    background_music_path: musicStaticPath,
     music_volume: config.audio.background_music_volume,
     config,
   };
+
+  // Save sanitized props for Remotion Studio preview
+  const sanitizedProps = {
+    ...inputProps,
+    config: {
+      ...inputProps.config,
+      pexels_api_key: '',
+      openrouter_api_key: '',
+      elevenlabs_api_key: undefined,
+      heygen_api_key: undefined,
+    },
+  };
+  const propsJsonPath = path.join(publicDir, 'props.json');
+  await fs.writeFile(propsJsonPath, JSON.stringify(sanitizedProps, null, 2), 'utf-8');
+  console.log('   ✅ Saved preview props to public/props.json');
 
   const totalDuration = scenes.reduce((sum, scene) => sum + scene.audio.duration, 0);
   console.log(`   Total content duration: ${totalDuration.toFixed(1)}s`);
@@ -345,8 +432,12 @@ async function generateVideoAsset(
   }
 
   // Download from Pexels
-  const query = line.search_query || 'abstract digital background';
-  return await Pexels.searchAndDownload(query, outputPath, config.pexels_api_key);
+  const query = line.search_query || 'technology abstract';
+  const result = await Pexels.searchAndDownload(query, outputPath, config.pexels_api_key);
+  if (result) return result;
+
+  // No video found — return a placeholder (scene will render as title card style)
+  return { file_path: '', width: 1920, height: 1080, duration: undefined };
 }
 
 /**

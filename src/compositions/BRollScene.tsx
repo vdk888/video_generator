@@ -24,17 +24,21 @@ export const BRollScene: React.FC<BRollSceneProps> = ({ scene }) => {
   return (
     <AbsoluteFill>
       {/* Background video */}
-      <OffthreadVideo
-        src={staticFile(scene.video.file_path)}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-        }}
-      />
+      {scene.video.file_path && (
+        <OffthreadVideo
+          src={staticFile(scene.video.file_path)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      )}
 
       {/* Voiceover audio */}
-      <Audio src={staticFile(scene.audio.file_path)} />
+      {scene.audio.file_path && (
+        <Audio src={staticFile(scene.audio.file_path)} />
+      )}
 
       {/* Subtitles overlay */}
       {scene.audio.word_timings && scene.audio.word_timings.length > 0 && (

@@ -35,125 +35,103 @@ interface PexelsSearchResponse {
  * @param minDuration - Minimum duration in seconds (not enforced by API)
  * @returns VideoAsset with path and dimensions
  */
+const FALLBACK_QUERIES = [
+  'technology abstract',
+  'city lights night',
+  'ocean waves',
+  'nature landscape',
+  'sky clouds timelapse',
+];
+
 export async function searchAndDownload(
   query: string,
   outputPath: string,
   apiKey: string,
   minDuration: number = 0
-): Promise<VideoAsset> {
-  console.log(`Searching Pexels for: "${query}"`);
-
+): Promise<VideoAsset | null> {
   // Check if file already exists (avoid redundant API calls)
   try {
     await fs.access(outputPath);
     const stats = await fs.stat(outputPath);
     if (stats.size > 0) {
-      console.log(`File exists: ${outputPath}. Skipping download.`);
+      console.log(`  ✅ Cached: ${outputPath}`);
+      const duration = await getVideoDuration(outputPath);
+      return { file_path: outputPath, width: 1920, height: 1080, duration };
+    }
+  } catch {
+    // File doesn't exist, proceed
+  }
+
+  // Try the original query, then fallbacks
+  const queries = [query, ...FALLBACK_QUERIES];
+
+  for (const q of queries) {
+    console.log(`  Searching Pexels: "${q}"`);
+    try {
+      const result = await searchPexels(q, apiKey);
+      if (!result) continue;
+
+      await downloadFile(result.link, outputPath);
+      console.log(`  ✅ Downloaded: ${outputPath}`);
+      const duration = await getVideoDuration(outputPath);
+
       return {
         file_path: outputPath,
-        width: 1920,
-        height: 1080,
-        duration: 0, // Unknown duration for cached files
+        width: result.width,
+        height: result.height,
+        duration,
       };
+    } catch (error) {
+      console.warn(`  ⚠ Failed for "${q}": ${error}`);
     }
-  } catch (error) {
-    // File doesn't exist, proceed with download
   }
 
-  try {
-    // Search for landscape HD videos
-    const url = new URL('https://api.pexels.com/videos/search');
-    url.searchParams.set('query', query);
-    url.searchParams.set('per_page', '1');
-    url.searchParams.set('orientation', 'landscape');
-    url.searchParams.set('size', 'large'); // HD quality
+  console.error(`  ❌ No video found for any query. Skipping.`);
+  return null;
+}
 
-    const response = await fetch(url.toString(), {
-      headers: {
-        Authorization: apiKey,
-      },
-    });
+async function searchPexels(
+  query: string,
+  apiKey: string
+): Promise<{ link: string; width: number; height: number } | null> {
+  const url = new URL('https://api.pexels.com/videos/search');
+  url.searchParams.set('query', query);
+  url.searchParams.set('per_page', '5');
+  url.searchParams.set('orientation', 'landscape');
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Pexels API error (${response.status}): ${errorText}`);
-    }
+  const response = await fetch(url.toString(), {
+    headers: { Authorization: apiKey },
+  });
 
-    const data = (await response.json()) as PexelsSearchResponse;
-
-    if (!data.videos || data.videos.length === 0) {
-      console.log(`No videos found for "${query}". Using fallback.`);
-      return await searchAndDownload('abstract digital background', outputPath, apiKey, minDuration);
-    }
-
-    const video = data.videos[0];
-    const videoFiles = video.video_files || [];
-
-    // Pick best quality: prioritize 1080p or higher
-    let bestVideo = videoFiles.find((v) => v.width >= 1920);
-    if (!bestVideo && videoFiles.length > 0) {
-      bestVideo = videoFiles[0];
-    }
-
-    if (!bestVideo) {
-      throw new Error('No video file found in Pexels response');
-    }
-
-    // Download video
-    console.log(`Downloading video from ${bestVideo.link}...`);
-    const videoResponse = await fetch(bestVideo.link);
-
-    if (!videoResponse.ok) {
-      throw new Error(`Failed to download video: status ${videoResponse.status}`);
-    }
-
-    if (!videoResponse.body) {
-      throw new Error('No response body from video URL');
-    }
-
-    // Stream to file
-    const fileHandle = await fs.open(outputPath, 'w');
-    const writable = fileHandle.createWriteStream();
-
-    try {
-      const reader = videoResponse.body.getReader();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        writable.write(value);
-      }
-
-      writable.end();
-      await new Promise<void>((resolve, reject) => {
-        writable.on('finish', () => resolve());
-        writable.on('error', reject);
-      });
-    } finally {
-      await fileHandle.close();
-    }
-
-    console.log(`Video downloaded: ${outputPath}`);
-
-    // Get actual duration
-    const duration = await getVideoDuration(outputPath);
-
-    return {
-      file_path: outputPath,
-      width: bestVideo.width,
-      height: bestVideo.height,
-      duration,
-    };
-  } catch (error) {
-    // Fallback: try generic query if not already
-    if (!query.includes('abstract')) {
-      console.error(`Pexels download error: ${error}`);
-      console.log('Trying fallback query...');
-      return await searchAndDownload('abstract digital background', outputPath, apiKey, minDuration);
-    }
-
-    throw new Error(`Failed to download video: ${error}`);
+  if (!response.ok) {
+    throw new Error(`Pexels API ${response.status}: ${await response.text()}`);
   }
+
+  const data = (await response.json()) as PexelsSearchResponse;
+
+  if (!data.videos || data.videos.length === 0) return null;
+
+  // Pick first video with a usable file
+  for (const video of data.videos) {
+    const file =
+      video.video_files.find((v) => v.width >= 1920 && v.file_type === 'video/mp4') ||
+      video.video_files.find((v) => v.width >= 1280 && v.file_type === 'video/mp4') ||
+      video.video_files.find((v) => v.file_type === 'video/mp4');
+    if (file) {
+      return { link: file.link, width: file.width, height: file.height };
+    }
+  }
+
+  return null;
+}
+
+async function downloadFile(url: string, outputPath: string): Promise<void> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+  if (!response.body) throw new Error('No response body');
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  await fs.writeFile(outputPath, buffer);
 }
 
 /**

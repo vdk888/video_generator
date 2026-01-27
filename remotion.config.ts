@@ -1,5 +1,4 @@
 import { Config } from '@remotion/cli/config';
-import { enableTailwind } from '@remotion/tailwind';
 
 Config.setVideoImageFormat('jpeg');
 Config.setOverwriteOutput(true);
@@ -24,6 +23,7 @@ Config.overrideWebpackConfig((config) => {
         os: require.resolve('os-browserify/browser'),
         crypto: require.resolve('crypto-browserify'),
         fs: false,
+        vm: false,
         stream: false,
         buffer: false,
       },

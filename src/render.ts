@@ -31,6 +31,7 @@ export async function renderVideo(
   const bundleLocation = await bundle({
     entryPoint: path.resolve(__dirname, 'index.ts'),
     webpackOverride: (config) => config,
+    publicDir: path.resolve(__dirname, '..', 'public'),
   });
 
   console.log('✅ Bundle created');

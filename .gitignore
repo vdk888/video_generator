@@ -8,3 +8,9 @@ assets/
 node_modules/
 build/
 .claude/
+
+build
+projects/
+public/props.json
+public/project-assets
+public/logo.png

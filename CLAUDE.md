@@ -145,10 +145,17 @@ ls projects/myproject/final_output.mp4
 
 ## Development Workflow
 1. **Write Script**: Create `raw_source.txt` or `script.json` in project folder
-2. **Preview**: Use `npm run dev` to open Remotion Studio and preview compositions
-3. **Iterate**: Adjust script, compositions, or service settings
-4. **Render**: Run `npm run render` to generate final video
-5. **Review**: Check `final_output.mp4` in project folder
+2. **Render**: `npm run render -- --project=myproject` (generates assets, audio, video + saves `public/props.json` for preview)
+3. **Preview in Studio**: `npm run dev` → open localhost:3000 (Studio auto-loads props.json with real scene data)
+4. **Iterate Visuals**: Edit compositions in `src/compositions/`, see changes live in Studio with real content
+5. **Re-render**: Run `npm run render` again after script/composition changes
+6. **Review**: Check `projects/myproject/final_output.mp4`
+
+### Studio Preview Details
+- After rendering, `public/props.json` contains the scene data (paths, durations, config)
+- `public/project-assets` symlinks to the active project's assets directory
+- Studio fetches `props.json` at runtime — no Node.js imports needed in browser context
+- To switch projects, re-run `npm run render -- --project=otherproject` and refresh Studio
 
 ## Troubleshooting
 - **"Cannot find ffmpeg"**: Install FFmpeg (`brew install ffmpeg` on macOS)

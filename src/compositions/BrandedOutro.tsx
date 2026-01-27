@@ -7,9 +7,9 @@ import React from 'react';
 import {
   AbsoluteFill,
   Img,
+  staticFile,
   useCurrentFrame,
   interpolate,
-  staticFile,
 } from 'remotion';
 import { INTRO_OUTRO, FONTS, secondsToFrames } from '../brand';
 

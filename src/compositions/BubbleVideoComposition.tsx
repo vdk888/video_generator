@@ -9,8 +9,8 @@ import {
   AbsoluteFill,
   Audio,
   Sequence,
-  useVideoConfig,
   staticFile,
+  useVideoConfig,
   interpolate,
 } from 'remotion';
 import { TransitionSeries, linearTiming } from '@remotion/transitions';
@@ -37,33 +37,13 @@ export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
   // Transition duration from brand constants: 0.4s = 10 frames at 25fps
   const transitionFrames = secondsToFrames(TIMING.TRANSITION_DURATION, fps);
 
-  // Calculate scene frame durations
+  // Minimum scene duration: must be longer than transition
+  const minSceneFrames = transitionFrames + 5;
+
+  // Calculate scene frame durations (enforce minimum)
   const sceneDurations = scenes.map((scene) =>
-    Math.ceil(scene.audio.duration * fps)
+    Math.max(minSceneFrames, Math.ceil(scene.audio.duration * fps))
   );
-
-  // Build transition series for scenes
-  const buildTransitionSeries = () => {
-    if (scenes.length === 0) {
-      return null;
-    }
-
-    const transitions: Array<{
-      component: React.ReactNode;
-      durationInFrames: number;
-    }> = [];
-
-    scenes.forEach((scene, index) => {
-      transitions.push({
-        component: <SceneRouter scene={scene} />,
-        durationInFrames: sceneDurations[index],
-      });
-    });
-
-    return transitions;
-  };
-
-  const transitionSeries = buildTransitionSeries();
 
   // Calculate music volume using brand helper (convert dB to linear scale)
   // -20dB ≈ 0.1 volume
@@ -77,29 +57,22 @@ export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
       </Sequence>
 
       {/* Main content with transitions */}
-      {transitionSeries && transitionSeries.length > 0 && (
+      {scenes.length > 0 && (
         <Sequence from={introDuration}>
           <TransitionSeries>
-            {transitionSeries.map((item, index) => (
-              <TransitionSeries.Sequence
-                key={index}
-                durationInFrames={item.durationInFrames}
-              >
-                {item.component}
-              </TransitionSeries.Sequence>
-            ))}
-            {transitionSeries.map((_, index) => {
-              if (index < transitionSeries.length - 1) {
-                return (
+            {scenes.map((scene, index) => (
+              <React.Fragment key={index}>
+                <TransitionSeries.Sequence durationInFrames={sceneDurations[index]}>
+                  <SceneRouter scene={scene} />
+                </TransitionSeries.Sequence>
+                {index < scenes.length - 1 && (
                   <TransitionSeries.Transition
-                    key={`transition-${index}`}
                     presentation={fade()}
                     timing={linearTiming({ durationInFrames: transitionFrames })}
                   />
-                );
-              }
-              return null;
-            })}
+                )}
+              </React.Fragment>
+            ))}
           </TransitionSeries>
         </Sequence>
       )}

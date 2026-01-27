@@ -35,9 +35,21 @@ export async function generateSpeech(
   apiKey: string,
   voice: string = 'alloy'
 ): Promise<AudioAsset> {
-  console.log(`Generating OpenAI TTS audio for: "${text.slice(0, 30)}..."`);
+  console.log(`  Generating TTS: "${text.slice(0, 40)}..."`);
 
-  // 1. Call OpenRouter streaming audio API
+  // Check cache
+  try {
+    const stats = await fs.stat(outputPath);
+    if (stats.size > 10000) {
+      const duration = await getAudioDuration(outputPath);
+      if (duration > 0.5) {
+        console.log(`  ✅ Cached audio: ${duration.toFixed(1)}s`);
+        return { file_path: outputPath, duration, subtitle_path: null, word_timings: null };
+      }
+    }
+  } catch { /* not cached */ }
+
+  // Use OpenAI gpt-audio-mini via OpenRouter (streaming SSE)
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -49,57 +61,54 @@ export async function generateSpeech(
     body: JSON.stringify({
       model: 'openai/gpt-audio-mini',
       modalities: ['text', 'audio'],
-      audio: {
-        voice: voice,
-        format: 'pcm16',
-      },
-      messages: [{ role: 'user', content: text }],
+      audio: { voice, format: 'pcm16' },
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a text-to-speech engine. Read the user\'s text aloud exactly as written. Do not add anything. Do not respond with text. Only produce audio output.',
+        },
+        { role: 'user', content: text },
+      ],
       stream: true,
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`OpenAI TTS API error (${response.status}): ${errorText}`);
+    throw new Error(`TTS API error (${response.status}): ${errorText}`);
   }
 
-  // 2. Stream and collect audio chunks
-  const audioBuffer: Buffer[] = [];
+  if (!response.body) throw new Error('No response body from TTS API');
 
-  if (!response.body) {
-    throw new Error('No response body from OpenAI TTS');
-  }
-
+  // Parse SSE stream and collect PCM16 audio chunks
+  const audioChunks: Buffer[] = [];
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
+  let partial = '';
 
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      // Parse SSE chunks (format: "data: {...}\n\n")
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n');
+      partial += decoder.decode(value, { stream: true });
+      const lines = partial.split('\n');
+      // Keep the last potentially incomplete line
+      partial = lines.pop() || '';
 
       for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const jsonStr = line.slice(6); // Remove "data: " prefix
-          if (jsonStr.trim() === '[DONE]') continue;
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (jsonStr === '[DONE]') continue;
 
-          try {
-            const data = JSON.parse(jsonStr) as AudioChunk;
-            const audioData = data.choices?.[0]?.delta?.audio?.data;
-
-            if (audioData) {
-              // Decode base64 to binary
-              const binaryData = Buffer.from(audioData, 'base64');
-              audioBuffer.push(binaryData);
-            }
-          } catch (error) {
-            // Skip invalid JSON chunks
-            continue;
+        try {
+          const data = JSON.parse(jsonStr);
+          const audioData = data.choices?.[0]?.delta?.audio?.data;
+          if (audioData) {
+            audioChunks.push(Buffer.from(audioData, 'base64'));
           }
+        } catch {
+          // skip malformed chunks
         }
       }
     }
@@ -107,37 +116,30 @@ export async function generateSpeech(
     reader.releaseLock();
   }
 
-  if (audioBuffer.length === 0) {
-    throw new Error('No audio data received from API');
+  if (audioChunks.length === 0) {
+    throw new Error('No audio data received from TTS API');
   }
 
-  // 3. Combine chunks and save as raw PCM
-  const rawPcmBuffer = Buffer.concat(audioBuffer);
+  // Save raw PCM and convert to MP3
   const rawPath = `${outputPath}.pcm`;
-  await fs.writeFile(rawPath, rawPcmBuffer);
-
-  // 4. Convert PCM16 to MP3 using FFmpeg
-  // OpenAI TTS returns: PCM16 LE, 24kHz, Mono
-  // Project standard: 48kHz, Stereo, MP3
+  await fs.writeFile(rawPath, Buffer.concat(audioChunks));
   await convertPcmToMp3(rawPath, outputPath);
-
-  // Clean up raw PCM file
   await fs.unlink(rawPath);
 
-  // 5. Get audio duration
+  // Get audio duration
   const duration = await getAudioDuration(outputPath);
 
-  // 6. Generate subtitle file (ASS format)
+  // Generate subtitle file
   const subtitlePath = outputPath.replace('.mp3', '.ass');
   await generateSubtitles(text, subtitlePath, duration, null);
 
-  console.log(`Audio saved: ${outputPath} (${duration.toFixed(2)}s)`);
+  console.log(`  ✅ Audio: ${duration.toFixed(1)}s`);
 
   return {
     file_path: outputPath,
     duration,
     subtitle_path: subtitlePath,
-    word_timings: null, // OpenAI TTS doesn't provide word timings yet
+    word_timings: null,
   };
 }
 

@@ -57,18 +57,22 @@ export const KineticTypography: React.FC<KineticTypographyProps> = ({
           filter: `brightness(${KINETIC.BACKGROUND_BRIGHTNESS})`,
         }}
       >
-        <OffthreadVideo
-          src={staticFile(scene.video.file_path)}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
-        />
+        {scene.video.file_path && (
+          <OffthreadVideo
+            src={staticFile(scene.video.file_path)}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+          />
+        )}
       </div>
 
       {/* Voiceover audio */}
-      <Audio src={staticFile(scene.audio.file_path)} />
+      {scene.audio.file_path && (
+        <Audio src={staticFile(scene.audio.file_path)} />
+      )}
 
       {/* Large kinetic text overlay - all styling from brand constants */}
       <AbsoluteFill

@@ -11,13 +11,30 @@
     "test": "echo \"Tests not yet implemented\" && exit 0"
   },
   "dependencies": {
+    "@remotion/animated-emoji": "4.0.410",
+    "@remotion/animation-utils": "4.0.410",
     "@remotion/cli": "^4.0.410",
+    "@remotion/enable-scss": "4.0.410",
+    "@remotion/fonts": "4.0.410",
+    "@remotion/gif": "4.0.410",
     "@remotion/google-fonts": "^4.0.410",
+    "@remotion/media-utils": "4.0.410",
+    "@remotion/motion-blur": "4.0.410",
+    "@remotion/noise": "4.0.410",
+    "@remotion/paths": "4.0.410",
+    "@remotion/player": "4.0.410",
+    "@remotion/preload": "4.0.410",
     "@remotion/renderer": "^4.0.410",
+    "@remotion/shapes": "4.0.410",
+    "@remotion/studio": "4.0.410",
+    "@remotion/tailwind": "4.0.410",
+    "@remotion/tailwind-v4": "4.0.410",
+    "@remotion/three": "4.0.410",
     "@remotion/transitions": "^4.0.410",
+    "@remotion/webcodecs": "4.0.410",
     "dotenv": "^16.4.5",
     "remotion": "^4.0.410",
-    "zod": "^3.24.1"
+    "zod": "3.22.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
