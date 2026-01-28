@@ -205,6 +205,12 @@ export const SUBTITLES = {
     2px 2px 0 ${COLORS.SUBTITLE_OUTLINE},
     0 0 8px rgba(0, 0, 0, 0.8)
   `,
+
+  // Background bar styling
+  BACKGROUND_COLOR: 'rgba(0, 0, 0, 0.6)', // Semi-transparent black
+  BACKGROUND_RADIUS: 8, // Border radius in pixels
+  BACKGROUND_PADDING_V: 8, // Vertical padding in pixels
+  BACKGROUND_PADDING_H: 24, // Horizontal padding in pixels
 } as const;
 
 // ============================================================================
@@ -292,6 +298,24 @@ export const SPRING_CONFIGS = {
 export const LAYOUT = {
   PADDING_HORIZONTAL: 100, // Standard horizontal padding for text
   MAX_WIDTH_PERCENT: 90, // Max width as percentage for text
+} as const;
+
+// ============================================================================
+// BROLL STYLING
+// ============================================================================
+
+/**
+ * B-roll video styling - Ken Burns effect and color grading
+ * Per VIDEO_BIBLE.md: Subtle animation and color enhancement
+ */
+export const BROLL = {
+  CONTRAST: 1.08,
+  SATURATION: 1.15,
+  BRIGHTNESS: 1.03,
+  KEN_BURNS_SCALE_START: 1.12,    // Start slightly zoomed (was always 1.0)
+  KEN_BURNS_SCALE_END: 1.0,       // Zoom OUT for a "reveal" feel (was zoom in to 1.15)
+  KEN_BURNS_TRANSLATE_MAX: 30,    // More pan range (was 20)
+  VIGNETTE_OPACITY: 0.3,          // Subtle edge darkening
 } as const;
 
 // ============================================================================

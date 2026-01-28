@@ -38,6 +38,7 @@
 - **Node polyfills**: Webpack 5+ requires explicit polyfills (path-browserify, url, os-browserify, crypto-browserify)
 - **Font loading**: Use @remotion/google-fonts for Inter font, fallback to CSS @import for browser compatibility
 - **Brand constants**: ALL styling values must come from src/brand.ts (no hardcoded colors/sizes)
+- **Remotion transitions**: TransitionSeries.Transition `presentation` prop is type-specific - use `any` return type for helper functions that return different transition types (fade/slide/wipe)
 
 ## Migration Progress
 - **Phase 1**: TypeScript scaffolding (types, config, Root.tsx) - COMPLETE
@@ -63,6 +64,47 @@
   - `getVideoDuration(filePath)`, `getVideoDimensions(filePath)`, `getVideoFrameRate(filePath)`
 
 ## Recent Changes
+- [2026-01-27]: Enhanced B-Roll Visual Impact - Alternating Ken Burns, Entrance Flash, Vignette
+  - Modified: src/brand.ts - Updated BROLL constants (CONTRAST: 1.08, SATURATION: 1.15, BRIGHTNESS: 1.03, KEN_BURNS_SCALE_START: 1.12, KEN_BURNS_SCALE_END: 1.0, TRANSLATE_MAX: 30px, VIGNETTE_OPACITY: 0.3)
+  - Modified: src/compositions/BRollScene.tsx - Alternating Ken Burns direction + entrance flash + vignette
+  - Ken Burns direction: Alternates based on scene text length hash (even: zoom out 1.12→1.0 + pan left -30px, odd: zoom in 1.0→1.12 + pan right +20px)
+  - Entrance flash: First 8 frames brightness ramps from 1.3→1.03 for energetic scene cut
+  - Vignette: radial-gradient overlay (transparent center→rgba(0,0,0,0.3) edges) for subtitle readability and cinematic depth
+  - Direction alternation creates visual variety between consecutive B-roll scenes
+  - All effects use brand constants from BROLL config
+- [2026-01-27]: Word-by-Word Stagger Animation and Violet Accent Line on Title Cards
+  - Modified: src/compositions/TitleCard.tsx - Added animated word entrance and accent line
+  - Word stagger: Each word fades in (0→1) and rises (translateY 20px→0) over 12 frames
+  - Stagger delay: 3 frames per word (creates cascading effect)
+  - Easing: Easing.out(Easing.cubic) for smooth deceleration
+  - Accent line: 2px height, 80px width, violet (#667eea), scales from center
+  - Accent timing: Appears after last word + 5 frames, animates over 15 frames
+  - Preserves existing fade-out and overall scale animation
+  - All styling from brand constants (COLORS.ACCENT_VIOLET)
+- [2026-01-27]: Varied Transition Types Based on Scene Type
+  - Modified: src/compositions/BubbleVideoComposition.tsx - Added scene-type-aware transitions
+  - Imported: slide, wipe transitions from @remotion/transitions (in addition to fade)
+  - Created: getTransitionPresentation() helper - selects transition based on current/next scene types
+  - Kinetic scenes: Fast fade (transitionFrames/3) for hard cut feel
+  - Title card in: wipe from-left for clean editorial feel
+  - Title card out: slide from-right for energy
+  - Default: fade transition (0.4s from brand constants)
+  - Helper returns `any` type to avoid TransitionPresentation type union issue
+  - Extracts width/height from useVideoConfig() for transition params
+- [2026-01-27]: Ken Burns Effect and Color Grading on B-Roll Scenes
+  - Modified: src/brand.ts - Added BROLL constants (CONTRAST: 1.05, SATURATION: 1.1, BRIGHTNESS: 1.02, KEN_BURNS_SCALE_END: 1.15, KEN_BURNS_TRANSLATE_MAX: 20px)
+  - Modified: src/compositions/BRollScene.tsx - Implemented Ken Burns effect and color grading
+  - Ken Burns: Slow zoom (scale 1.0→1.15) + pan (translateX 0→-20px) using interpolate
+  - Color grading: CSS filter with contrast/saturation/brightness adjustments
+  - Wrapper div with overflow:hidden to contain zoom/pan effect
+  - Uses useCurrentFrame + interpolate for smooth animation over scene duration
+  - Keeps existing subtitle overlay and audio playback intact
+- [2026-01-27]: Added Semi-Transparent Background Bar to Subtitles
+  - Modified: src/brand.ts - Added SUBTITLES.BACKGROUND_COLOR (rgba 0,0,0,0.6), BACKGROUND_RADIUS (8px), BACKGROUND_PADDING_V/H (8/24px)
+  - Modified: src/compositions/SubtitleOverlay.tsx - Wrapped text in background div with rounded corners
+  - Background opacity matches text opacity (same interpolated fade in/out)
+  - Keeps existing text shadow/outline for extra contrast
+  - Background only renders when text is displayed
 - [2026-01-27]: TypeScript Phase 5 - Brand Compliance Audit & Font Loading
   - Created: src/brand.ts (single source of truth for ALL brand styling constants)
   - Modified: All composition files to use brand constants (no hardcoded values)

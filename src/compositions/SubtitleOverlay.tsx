@@ -64,6 +64,14 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     );
   }
 
+  // Scale-in entrance animation
+  const scaleIn = interpolate(
+    currentTime,
+    [firstWordStart, firstWordStart + 0.15],
+    [0.9, 1.0],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  );
+
   return (
     <div
       style={{
@@ -80,15 +88,18 @@ export const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     >
       <div
         style={{
+          backgroundColor: SUBTITLES.BACKGROUND_COLOR,
+          borderRadius: '12px',
+          padding: `${SUBTITLES.BACKGROUND_PADDING_V}px ${SUBTITLES.BACKGROUND_PADDING_H}px`,
           fontSize: SUBTITLES.FONT_SIZE,
           fontFamily: FONTS.FAMILY,
           fontWeight: SUBTITLES.FONT_WEIGHT,
           color: SUBTITLES.COLOR,
           textAlign: 'center',
           textShadow: SUBTITLES.TEXT_SHADOW,
-          padding: '10px 40px',
           maxWidth: `${LAYOUT.MAX_WIDTH_PERCENT}%`,
           lineHeight: 1.4,
+          transform: `scale(${scaleIn})`,
         }}
       >
         {text}

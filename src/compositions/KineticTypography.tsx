@@ -12,6 +12,8 @@ import {
   useCurrentFrame,
   spring,
   useVideoConfig,
+  interpolate,
+  Easing,
 } from 'remotion';
 import { SubtitleOverlay } from './SubtitleOverlay';
 import { KINETIC, FONTS, LAYOUT, SPRING_CONFIGS } from '../brand';
@@ -30,7 +32,7 @@ export const KineticTypography: React.FC<KineticTypographyProps> = ({
   const { fps } = useVideoConfig();
 
   // Spring animation for text entrance using brand constants
-  const scale = spring({
+  const springScale = spring({
     frame,
     fps,
     from: 0.8,
@@ -46,15 +48,55 @@ export const KineticTypography: React.FC<KineticTypographyProps> = ({
     config: SPRING_CONFIGS.KINETIC,
   });
 
+  // Blur-to-sharp entrance animation (first 12 frames) - bigger initial blur
+  const blurAmount = interpolate(
+    frame,
+    [0, 12],
+    [12, 0],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }
+  );
+
+  // Slide-up entrance animation (first 18 frames) - bigger movement
+  const translateY = interpolate(
+    frame,
+    [0, 18],
+    [60, 0],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+      easing: Easing.out(Easing.cubic),
+    }
+  );
+
+  // Subtle continuous pulse after settling (after frame 20) - stronger pulse, slower
+  const pulse = frame > 20 ? 1 + 0.025 * Math.sin((frame - 20) * 0.06) : 1;
+
+  // Combine all scale effects
+  const finalScale = springScale * pulse;
+
+  // Progressive background dimming and blur
+  const bgBrightness = interpolate(frame, [0, 12], [1.0, KINETIC.BACKGROUND_BRIGHTNESS], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  const bgBlur = interpolate(frame, [0, 15], [0, 3], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
   return (
     <AbsoluteFill>
-      {/* Dimmed background video - using brand constant for brightness */}
+      {/* Dimmed background video - progressive dimming + blur */}
       <div
         style={{
           width: '100%',
           height: '100%',
           position: 'relative',
-          filter: `brightness(${KINETIC.BACKGROUND_BRIGHTNESS})`,
+          filter: `brightness(${bgBrightness}) blur(${bgBlur}px)`,
         }}
       >
         {scene.video.file_path && (
@@ -69,9 +111,19 @@ export const KineticTypography: React.FC<KineticTypographyProps> = ({
         )}
       </div>
 
-      {/* Voiceover audio */}
+      {/* Voiceover audio with fade-out */}
       {scene.audio.file_path && (
-        <Audio src={staticFile(scene.audio.file_path)} />
+        <Audio
+          src={staticFile(scene.audio.file_path)}
+          volume={(f) => {
+            const sceneDurationFrames = Math.ceil(scene.audio.duration * fps);
+            const fadeOutStart = Math.max(0, sceneDurationFrames - 5);
+            return interpolate(f, [fadeOutStart, sceneDurationFrames], [1, 0], {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            });
+          }}
+        />
       )}
 
       {/* Large kinetic text overlay - all styling from brand constants */}
@@ -92,9 +144,10 @@ export const KineticTypography: React.FC<KineticTypographyProps> = ({
             maxWidth: `${LAYOUT.MAX_WIDTH_PERCENT}%`,
             lineHeight: 1.1,
             letterSpacing: '-2px',
-            transform: `scale(${scale})`,
+            transform: `scale(${finalScale}) translateY(${translateY}px)`,
             opacity,
-            textShadow: KINETIC.TEXT_SHADOW,
+            textShadow: `${KINETIC.TEXT_SHADOW}, 0 0 60px rgba(102, 126, 234, 0.3), 0 0 120px rgba(102, 126, 234, 0.15)`,
+            filter: `blur(${blurAmount}px)`,
           }}
         >
           {highlightWord}
