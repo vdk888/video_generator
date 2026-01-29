@@ -3,7 +3,6 @@
         "type": "speech",
         "text": "J'ai une question pour vous. En combien de temps une machine a appris à parler ? Pas en mille ans. Pas en cent. En cinq ans. Et dans les trois prochaines minutes, vous allez comprendre comment.",
         "search_query": "person looking directly at camera dark room cinematic",
-        "highlight_word": "CINQ ANS",
         "scene_type": "avatar",
         "avatar_id": "990f87a5dcfe440ca7d096749c3228c8"
     },
@@ -13,16 +12,8 @@
     },
     {
         "type": "speech",
-        "text": "On est en 2012.",
+        "text": "On est en 2012. Personne ne parle d'intelligence artificielle.",
         "search_query": "vintage computer lab university campus",
-        "highlight_word": "TOUT A COMMENCÉ",
-        "scene_type": "broll"
-    },
-    {
-        "type": "speech",
-        "text": "Personne ne parle d'intelligence artificielle.",
-        "search_query": "empty conference room projector screen blank",
-        "highlight_word": "PERSONNE N'Y CROYAIT",
         "scene_type": "broll"
     },
     {
@@ -34,11 +25,19 @@
     },
     {
         "type": "speech",
-        "text": "Ils apprennent à un ordinateur à voir. Pas en lui décrivant un chat. En lui montrant un million de photos de chats. Et il se débrouille tout seul.",
-        "search_query": "person explaining concept enthusiastically",
-        "highlight_word": "LA MACHINE VOIT",
-        "scene_type": "avatar",
-        "avatar_id": "990f87a5dcfe440ca7d096749c3228c8"
+        "text": "Ils apprennent à un ordinateur à voir. Pas en lui décrivant un chat. En lui montrant un million de photos.",
+        "search_query": "neural network visualization data flowing",
+        "scene_type": "animated",
+        "animation": {
+            "type": "counter",
+            "params": {
+                "start": 0,
+                "end": 1000000,
+                "format": "compact",
+                "suffix": " photos",
+                "easing": "easeOut"
+            }
+        }
     },
     {
         "type": "speech",
@@ -53,21 +52,13 @@
     },
     {
         "type": "speech",
-        "text": "Mais il y a un problème. L'IA sait voir. Mais elle ne sait pas parler.",
-        "search_query": "locked door key missing dark corridor",
-        "highlight_word": "ELLE NE PARLE PAS",
-        "scene_type": "broll"
-    },
-    {
-        "type": "speech",
-        "text": "Elle lit les mots un par un. Comme un robot.",
+        "text": "Mais il y a un problème. L'IA sait voir. Mais elle ne sait pas parler. Elle lit les mots un par un. Comme un robot.",
         "search_query": "old computer terminal green text scrolling slowly",
-        "highlight_word": "COMME UN ROBOT",
         "scene_type": "broll"
     },
     {
         "type": "speech",
-        "text": "Jusqu'en 2017. Google publie un papier de recherche. Son nom ? Le Transformer. Le T de GPT. Le T de ChatGPT.",
+        "text": "Jusqu'en 2017. Google publie un papier de recherche. Son nom ? Le Transformer.",
         "search_query": "person revealing important information",
         "highlight_word": "TRANSFORMER",
         "scene_type": "avatar",
@@ -75,9 +66,8 @@
     },
     {
         "type": "speech",
-        "text": "L'idée est simple mais géniale. Au lieu de lire mot par mot, la machine comprend tout le contexte d'un coup. Comme vous quand vous lisez cette phrase.",
+        "text": "L'idée est simple mais géniale. Au lieu de lire mot par mot, la machine comprend tout le contexte d'un coup.",
         "search_query": "lightbulb turning on dramatic lighting cinematic",
-        "highlight_word": "TOUT LE CONTEXTE",
         "scene_type": "broll"
     },
     {
@@ -86,15 +76,8 @@
     },
     {
         "type": "speech",
-        "text": "Et là, tout s'accélère.",
+        "text": "Et là, tout s'accélère. 2022. OpenAI lance ChatGPT.",
         "search_query": "rocket launch flame exhaust dramatic slow motion",
-        "highlight_word": "EXPLOSION",
-        "scene_type": "broll"
-    },
-    {
-        "type": "speech",
-        "text": "2022. OpenAI lance ChatGPT.",
-        "search_query": "digital explosion shockwave expanding universe",
         "highlight_word": "CHATGPT",
         "scene_type": "broll"
     },
@@ -102,22 +85,39 @@
         "type": "speech",
         "text": "100 millions d'utilisateurs en deux mois. Record absolu dans l'histoire d'Internet.",
         "search_query": "crowd of people smartphones city aerial view",
-        "highlight_word": "100 MILLIONS",
-        "scene_type": "broll"
+        "scene_type": "animated",
+        "animation": {
+            "type": "counter",
+            "params": {
+                "start": 0,
+                "end": 100000000,
+                "format": "millions",
+                "suffix": " utilisateurs",
+                "easing": "easeOut"
+            }
+        }
     },
     {
         "type": "speech",
-        "text": "L'IA ne fait plus que classer des photos. Elle écrit. Elle dessine. Elle compose. On appelle ça l'intelligence générative.",
-        "search_query": "person making exciting announcement",
-        "highlight_word": "IA GÉNÉRATIVE",
-        "scene_type": "avatar",
-        "avatar_id": "990f87a5dcfe440ca7d096749c3228c8"
+        "text": "L'IA écrit. Elle dessine. Elle compose. On appelle ça l'intelligence générative.",
+        "search_query": "digital art creation ai generated imagery",
+        "scene_type": "animated",
+        "animation": {
+            "type": "icon_grid",
+            "params": {
+                "total": 9,
+                "highlighted": 9,
+                "icon": "star",
+                "columns": 3,
+                "highlightColor": "#667eea",
+                "animationStyle": "sequential"
+            }
+        }
     },
     {
         "type": "speech",
         "text": "Et on n'en est qu'au début. Si vous voulez comprendre ce que ça change pour vous, abonnez-vous. On ne fait que commencer.",
         "search_query": "person confident looking at camera warm lighting",
-        "highlight_word": "ON COMMENCE",
         "scene_type": "avatar",
         "avatar_id": "990f87a5dcfe440ca7d096749c3228c8"
     }

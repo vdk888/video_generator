@@ -6,7 +6,6 @@
 import React from 'react';
 import {
   AbsoluteFill,
-  Audio,
   OffthreadVideo,
   staticFile,
   useCurrentFrame,
@@ -111,20 +110,7 @@ export const KineticTypography: React.FC<KineticTypographyProps> = ({
         )}
       </div>
 
-      {/* Voiceover audio with fade-out */}
-      {scene.audio.file_path && (
-        <Audio
-          src={staticFile(scene.audio.file_path)}
-          volume={(f) => {
-            const sceneDurationFrames = Math.ceil(scene.audio.duration * fps);
-            const fadeOutStart = Math.max(0, sceneDurationFrames - 5);
-            return interpolate(f, [fadeOutStart, sceneDurationFrames], [1, 0], {
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp',
-            });
-          }}
-        />
-      )}
+      {/* Audio is handled by SceneAudioTrack in BubbleVideoComposition */}
 
       {/* Large kinetic text overlay - all styling from brand constants */}
       <AbsoluteFill

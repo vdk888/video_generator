@@ -21,8 +21,6 @@
 import React from 'react';
 import {
   AbsoluteFill,
-  Audio,
-  staticFile,
   useVideoConfig,
   useCurrentFrame,
   interpolate,
@@ -116,20 +114,7 @@ export const AnimatedScene: React.FC<AnimatedSceneProps> = ({
         />
       </AbsoluteFill>
 
-      {/* Voiceover audio */}
-      {scene.audio.file_path && (
-        <Audio
-          src={staticFile(scene.audio.file_path)}
-          volume={(f) => {
-            const sceneDurationFrames = Math.ceil(scene.audio.duration * fps);
-            const fadeOutStart = Math.max(0, sceneDurationFrames - 5);
-            return interpolate(f, [fadeOutStart, sceneDurationFrames], [1, 0], {
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp',
-            });
-          }}
-        />
-      )}
+      {/* Audio is handled by SceneAudioTrack in BubbleVideoComposition */}
 
       {/* Subtitles overlay */}
       {scene.audio.word_timings && scene.audio.word_timings.length > 0 && (

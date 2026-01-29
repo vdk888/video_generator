@@ -14,9 +14,18 @@ src/compositions/
 ├── TitleCard              # Section title cards
 ├── BRollScene             # B-roll with voiceover
 ├── AvatarScene            # HeyGen avatar display
+├── AnimatedScene          # Data viz animations (counters, charts)
 ├── KineticTypography      # Big text overlay
 ├── SubtitleOverlay        # Word-level subtitles
-└── SceneRouter            # Scene type router
+├── SceneRouter            # Scene type router
+└── animations/            # Animation component library
+    ├── Counter            # Counting numbers
+    ├── StackingObjects    # Piling objects
+    ├── ProgressBar        # Filling bars
+    ├── LineChart          # Line graphs
+    ├── BarChart           # Bar graphs
+    ├── IconGrid           # "1 in 3" statistics
+    └── ScaleComparison    # Size comparisons
 ```
 
 ## Primary Entry Point
@@ -238,6 +247,66 @@ import { SubtitleOverlay } from './compositions';
 - Auto-groups overlapping words
 - Smooth fade transitions
 
+### AnimatedScene
+
+**Use Case**: Ray Dalio-style data visualizations synced to voiceover
+
+```typescript
+import { AnimatedScene } from './compositions';
+
+const scene: Scene = {
+  script_line: {
+    text: "100 millions d'utilisateurs en deux mois.",
+    type: "speech",
+    scene_type: "animated",
+    animation: {
+      type: "counter",
+      params: {
+        start: 0,
+        end: 100000000,
+        format: "millions",
+        suffix: " utilisateurs"
+      }
+    }
+  },
+  audio: {
+    file_path: "audio_3.mp3",
+    duration: 3.5,
+    word_timings: [/* ... */],
+  },
+  video: {
+    file_path: "",  // No video file needed
+    width: 1920,
+    height: 1080,
+  },
+  output_path: "scene_3.mp4",
+};
+
+<AnimatedScene
+  scene={scene}
+  animation={scene.script_line.animation}
+/>
+```
+
+**Available Animation Types**:
+| Type | Description |
+|------|-------------|
+| `counter` | Numbers counting up/down |
+| `stacking` | Objects piling up |
+| `progress_bar` | Horizontal/vertical filling bar |
+| `line_chart` | Animated line graph |
+| `bar_chart` | Animated bar graph |
+| `icon_grid` | "1 in 3" icon statistics |
+| `scale_comparison` | Size comparison visualization |
+
+**Visual Output**:
+- Dark gradient background
+- Animated data visualization
+- Voiceover audio
+- Subtitles at bottom
+
+📖 **Full reference**: See `docs/ANIMATION_COMPONENTS.md` for all parameters and examples.
+
 ### SceneRouter
 
 **Use Case**: Automatically route scene to correct component
@@ -251,6 +320,7 @@ import { SceneRouter } from './compositions';
 // Routes to:
 // - TitleCard (if scene_type === "title")
 // - AvatarScene (if scene_type === "avatar")
+// - AnimatedScene (if scene_type === "animated" && animation exists)
 // - KineticTypography (if scene_type === "kinetic" && highlight_word exists)
 // - BRollScene (default)
 ```
@@ -442,4 +512,6 @@ See `PHASE4_INTEGRATION_PLAN.md` (future) for full details.
 - [Remotion Documentation](https://www.remotion.dev/docs)
 - [TransitionSeries Guide](https://www.remotion.dev/docs/transitions)
 - [VIDEO_BIBLE.md](../VIDEO_BIBLE.md) - Visual specifications
-- [PHASE3_IMPLEMENTATION_REPORT.md](../PHASE3_IMPLEMENTATION_REPORT.md) - Full implementation details
+- [ANIMATION_COMPONENTS.md](./ANIMATION_COMPONENTS.md) - Animation library reference
+- [DRAMATIC_EFFECTS_SKILL.md](./DRAMATIC_EFFECTS_SKILL.md) - TikTok-style highlight effects
+- [REMOTION_SKILLS.md](./REMOTION_SKILLS.md) - Core Remotion animation patterns

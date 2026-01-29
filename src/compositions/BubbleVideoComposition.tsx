@@ -1,7 +1,8 @@
 /**
  * BubbleVideoComposition - Main composition orchestrating full video
- * Uses TransitionSeries for scene transitions, overlays background music
- * Renders: BrandedIntro → scene sequences → BrandedOutro
+ *
+ * NO TransitionSeries - uses regular Sequences to avoid audio overlap.
+ * Visual transitions are handled via opacity fades at scene boundaries.
  */
 
 import React from 'react';
@@ -11,49 +12,14 @@ import {
   Sequence,
   staticFile,
   useVideoConfig,
+  useCurrentFrame,
   interpolate,
 } from 'remotion';
-import { TransitionSeries, linearTiming, springTiming } from '@remotion/transitions';
-import { fade } from '@remotion/transitions/fade';
-import { slide } from '@remotion/transitions/slide';
-import { wipe } from '@remotion/transitions/wipe';
 import { BrandedIntro } from './BrandedIntro';
 import { BrandedOutro } from './BrandedOutro';
 import { SceneRouter } from './SceneRouter';
 import { COLORS, TIMING, dbToLinear, secondsToFrames } from '../brand';
 import type { BubbleVideoInputProps, Scene } from '../types';
-
-/**
- * Helper to select transition presentation based on scene type pair
- * Kinetic cuts hard, title cards use wipes/slides for energy
- */
-function getTransitionPresentation(
-  currentScene: Scene,
-  nextScene: Scene,
-  width: number,
-  height: number,
-): any {
-  const currentType = currentScene.script_line.scene_type;
-  const nextType = nextScene.script_line.scene_type;
-
-  // Kinetic cuts in hard — no transition (use very fast fade as approximation)
-  if (nextType === 'kinetic') {
-    return fade();
-  }
-
-  // Into title card: clean editorial wipe
-  if (nextType === 'title') {
-    return wipe({ direction: 'from-left' });
-  }
-
-  // Out of title card: slide with energy
-  if (currentType === 'title') {
-    return slide({ direction: 'from-right' });
-  }
-
-  // Default: fade
-  return fade();
-}
 
 export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
   scenes,
@@ -62,25 +28,25 @@ export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
   music_volume,
   config,
 }) => {
-  const { fps, durationInFrames, width, height } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // Calculate durations using brand constants
-  const introDuration = secondsToFrames(config.timing.intro_duration[0], fps); // 3s default
-  const outroDuration = secondsToFrames(config.timing.outro_duration[0], fps); // 3s default
+  const introDuration = secondsToFrames(config.timing.intro_duration[0], fps);
+  const outroDuration = secondsToFrames(config.timing.outro_duration[0], fps);
+  const transitionFrames = secondsToFrames(TIMING.TRANSITION_DURATION, fps); // For visual fade
 
-  // Transition duration from brand constants: 0.4s = 10 frames at 25fps
-  const transitionFrames = secondsToFrames(TIMING.TRANSITION_DURATION, fps);
-
-  // Minimum scene duration: must be longer than transition
-  const minSceneFrames = transitionFrames + 5;
-
-  // Calculate scene frame durations (enforce minimum)
+  // Calculate scene frame durations based on audio
   const sceneDurations = scenes.map((scene) =>
-    Math.max(minSceneFrames, Math.ceil(scene.audio.duration * fps))
+    Math.max(15, Math.ceil(scene.audio.duration * fps))
   );
 
-  // Calculate music volume using brand helper (convert dB to linear scale)
-  // -20dB ≈ 0.1 volume
+  // Calculate cumulative start frames - NO OVERLAP
+  const sceneStarts: number[] = [];
+  let offset = introDuration;
+  for (let i = 0; i < scenes.length; i++) {
+    sceneStarts.push(offset);
+    offset += sceneDurations[i];
+  }
+
   const musicVolumeLinear = dbToLinear(music_volume);
 
   return (
@@ -90,52 +56,61 @@ export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
         <BrandedIntro logoPath={logo_path} duration={introDuration} />
       </Sequence>
 
-      {/* Main content with transitions */}
-      {scenes.length > 0 && (
-        <Sequence from={introDuration}>
-          <TransitionSeries>
-            {scenes.map((scene, index) => (
-              <React.Fragment key={index}>
-                <TransitionSeries.Sequence durationInFrames={sceneDurations[index]}>
-                  <SceneRouter scene={scene} />
-                </TransitionSeries.Sequence>
-                {index < scenes.length - 1 && (
-                  <TransitionSeries.Transition
-                    presentation={getTransitionPresentation(
-                      scenes[index],
-                      scenes[index + 1],
-                      width,
-                      height
-                    )}
-                    timing={
-                      scenes[index + 1].script_line.scene_type === 'kinetic'
-                        ? linearTiming({ durationInFrames: Math.round(transitionFrames / 3) }) // Kinetic cuts fast
-                        : scenes[index + 1].script_line.scene_type === 'title'
-                          ? springTiming({ config: { damping: 200 }, durationInFrames: transitionFrames }) // Smooth for titles
-                          : springTiming({ config: { damping: 20, stiffness: 200 }, durationInFrames: transitionFrames }) // Snappy for content
-                    }
-                  />
-                )}
-              </React.Fragment>
-            ))}
-          </TransitionSeries>
+      {/* Main scenes - sequential, no overlap */}
+      {scenes.map((scene, index) => (
+        <Sequence
+          key={`scene-${index}`}
+          from={sceneStarts[index]}
+          durationInFrames={sceneDurations[index]}
+        >
+          <SceneWithFade
+            scene={scene}
+            durationInFrames={sceneDurations[index]}
+            transitionFrames={transitionFrames}
+            isFirst={index === 0}
+            isLast={index === scenes.length - 1}
+          />
         </Sequence>
-      )}
+      ))}
+
+      {/* Scene audio - sequential, matching scene timing */}
+      {scenes.map((scene, index) => {
+        const sceneType = scene.script_line.scene_type;
+
+        // Skip: title (no audio), avatar (audio in video component)
+        if (sceneType === 'title' || sceneType === 'avatar') {
+          return null;
+        }
+
+        if (!scene.audio.file_path) {
+          return null;
+        }
+
+        return (
+          <Sequence
+            key={`audio-${index}`}
+            from={sceneStarts[index]}
+            durationInFrames={sceneDurations[index]}
+          >
+            <Audio src={staticFile(scene.audio.file_path)} volume={1} />
+          </Sequence>
+        );
+      })}
 
       {/* Outro */}
       <Sequence from={durationInFrames - outroDuration}>
         <BrandedOutro logoPath={logo_path} duration={outroDuration} />
       </Sequence>
 
-      {/* Background music with volume ducking and fades */}
+      {/* Background music */}
       {background_music_path && (
         <BackgroundMusic
           musicPath={background_music_path}
           volume={musicVolumeLinear}
           totalDurationFrames={durationInFrames}
           scenes={scenes}
+          sceneStarts={sceneStarts}
           sceneDurations={sceneDurations}
-          introFrames={introDuration}
           fps={fps}
         />
       )}
@@ -144,16 +119,62 @@ export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
 };
 
 /**
- * BackgroundMusic - Component for background music with fade in/out and ducking
- * Uses single Audio element with frame-based volume callback
+ * SceneWithFade - Wraps scene with opacity fade in/out for smooth transitions
+ */
+interface SceneWithFadeProps {
+  scene: Scene;
+  durationInFrames: number;
+  transitionFrames: number;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+const SceneWithFade: React.FC<SceneWithFadeProps> = ({
+  scene,
+  durationInFrames,
+  transitionFrames,
+  isFirst,
+  isLast,
+}) => {
+  const frame = useCurrentFrame();
+
+  // Fade in at start (unless first scene after intro)
+  const fadeIn = isFirst
+    ? 1
+    : interpolate(frame, [0, transitionFrames], [0, 1], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
+
+  // Fade out at end (unless last scene before outro)
+  const fadeOut = isLast
+    ? 1
+    : interpolate(
+        frame,
+        [durationInFrames - transitionFrames, durationInFrames],
+        [1, 0],
+        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+      );
+
+  const opacity = Math.min(fadeIn, fadeOut);
+
+  return (
+    <AbsoluteFill style={{ opacity }}>
+      <SceneRouter scene={scene} />
+    </AbsoluteFill>
+  );
+};
+
+/**
+ * BackgroundMusic - Background music with fade in/out and ducking
  */
 interface BackgroundMusicProps {
   musicPath: string;
-  volume: number; // base volume (linear, e.g. 0.1)
+  volume: number;
   totalDurationFrames: number;
   scenes: Scene[];
+  sceneStarts: number[];
   sceneDurations: number[];
-  introFrames: number;
   fps: number;
 }
 
@@ -162,36 +183,28 @@ const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
   volume: baseVolume,
   totalDurationFrames,
   scenes,
+  sceneStarts,
   sceneDurations,
-  introFrames,
   fps,
 }) => {
-  const fadeInFrames = Math.round(fps * 1.5); // 1.5s fade in
-  const fadeOutFrames = Math.round(fps * 2); // 2s fade out
+  const fadeInFrames = Math.round(fps * 1.5);
+  const fadeOutFrames = Math.round(fps * 2);
 
   // Pre-compute scene timeline for ducking
-  const sceneTimeline: Array<{ start: number; end: number; type: string }> = [];
-  let offset = introFrames;
-  for (let i = 0; i < scenes.length; i++) {
-    const dur = sceneDurations[i];
-    sceneTimeline.push({
-      start: offset,
-      end: offset + dur,
-      type: scenes[i].script_line.scene_type,
-    });
-    offset += dur;
-  }
+  const sceneTimeline = scenes.map((scene, i) => ({
+    start: sceneStarts[i],
+    end: sceneStarts[i] + sceneDurations[i],
+    type: scene.script_line.scene_type,
+  }));
 
   return (
     <Audio
       src={staticFile(musicPath)}
       volume={(f) => {
-        // Fade in
         const fadeIn = interpolate(f, [0, fadeInFrames], [0, baseVolume], {
           extrapolateLeft: 'clamp',
           extrapolateRight: 'clamp',
         });
-        // Fade out
         const fadeOut = interpolate(
           f,
           [totalDurationFrames - fadeOutFrames, totalDurationFrames],
@@ -199,17 +212,15 @@ const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
           { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
         );
 
-        // Ducking: reduce volume during avatar and kinetic scenes
+        // Ducking during avatar and kinetic scenes
         let duckFactor = 1.0;
         const rampFrames = 8;
         for (const seg of sceneTimeline) {
           if (seg.type === 'avatar' || seg.type === 'kinetic') {
-            // Ramp down entering ducked scene
             const duckDown = interpolate(f, [seg.start - rampFrames, seg.start], [1.0, 0.3], {
               extrapolateLeft: 'clamp',
               extrapolateRight: 'clamp',
             });
-            // Ramp up leaving ducked scene
             const duckUp = interpolate(f, [seg.end, seg.end + rampFrames], [0.3, 1.0], {
               extrapolateLeft: 'clamp',
               extrapolateRight: 'clamp',
