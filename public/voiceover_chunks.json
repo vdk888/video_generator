@@ -1,0 +1,218 @@
+{
+  "video": {
+    "path": "project-assets/video/demo.mp4",
+    "duration": 575.42
+  },
+  "chunks": [
+    {
+      "id": "01_intro",
+      "text": "Bienvenue dans Bubble Analyst, votre plateforme d'intelligence pour investisseurs fondamentaux.",
+      "audio": "project-assets/audio/01_intro.mp3",
+      "duration": 4.36,
+      "startTime": 0
+    },
+    {
+      "id": "02_login",
+      "text": "Connectons-nous pour découvrir l'application. L'authentification sécurisée protège vos données et configurations personnelles.",
+      "audio": "project-assets/audio/02_login.mp3",
+      "duration": 6.27,
+      "startTime": 5
+    },
+    {
+      "id": "03_tutorial_intro",
+      "text": "L'application s'organise en différents modules interconnectés. Commençons par un aperçu rapide de chaque fonctionnalité.",
+      "audio": "project-assets/audio/03_tutorial_intro.mp3",
+      "duration": 6.53,
+      "startTime": 14
+    },
+    {
+      "id": "03b_tutorial_modules",
+      "text": "Dashboard pour les actualités, timeline pour les événements, fiches entreprises détaillées, stratégie d'investissement personnalisable, et scoring composite.",
+      "audio": "project-assets/audio/03b_tutorial_modules.mp3",
+      "duration": 8.99,
+      "startTime": 22
+    },
+    {
+      "id": "03c_tutorial_features",
+      "text": "Ajoutez à cela le rééquilibrage automatique, l'analyse de risque, et un agent IA qui recherche les actualités pour vous.",
+      "audio": "project-assets/audio/03c_tutorial_features.mp3",
+      "duration": 6.84,
+      "startTime": 32
+    },
+    {
+      "id": "03d_dashboard",
+      "text": "Voici le tableau de bord principal. À gauche, les actualités de votre portefeuille. À droite, celles de votre univers d'observation. L'IA génère un résumé quotidien automatiquement.",
+      "audio": "project-assets/audio/03d_dashboard.mp3",
+      "duration": 10.76,
+      "startTime": 45
+    },
+    {
+      "id": "03e_news_enrichment",
+      "text": "Chaque actualité est enrichie par l'intelligence artificielle : catégorie, sentiment, et matérialité pour votre thèse d'investissement.",
+      "audio": "project-assets/audio/03e_news_enrichment.mp3",
+      "duration": 7.00,
+      "startTime": 58
+    },
+    {
+      "id": "03f_interactions",
+      "text": "Marquez les articles comme lus, ajoutez-les en suivi, ou archivez-les. Vos préférences personnalisent les alertes futures.",
+      "audio": "project-assets/audio/03f_interactions.mp3",
+      "duration": 6.35,
+      "startTime": 70
+    },
+    {
+      "id": "04_timeline",
+      "text": "Passons à la chronologie. Cette vue interactive affiche tous les événements clés : décisions réglementaires, résultats, partenariats. Vous pouvez filtrer par type d'événement et anticiper les catalyseurs à venir.",
+      "audio": "project-assets/audio/04_timeline.mp3",
+      "duration": 11.47,
+      "startTime": 81
+    },
+    {
+      "id": "04b_timeline_importance",
+      "text": "La timeline permet d'identifier les moments clés. Une annonce majeure peut faire bouger un titre significativement. Mieux vaut être préparé.",
+      "audio": "project-assets/audio/04b_timeline_importance.mp3",
+      "duration": 6.92,
+      "startTime": 100
+    },
+    {
+      "id": "05_companies_list",
+      "text": "Voici la liste des entreprises suivies. Vous pouvez facilement ajouter de nouvelles sociétés à votre portefeuille ou univers d'observation.",
+      "audio": "project-assets/audio/05_companies_list.mp3",
+      "duration": 7.47,
+      "startTime": 144
+    },
+    {
+      "id": "05b_company_detail",
+      "text": "Pour chaque entreprise, une fiche détaillée est générée avec le cours de l'action et les indicateurs financiers clés.",
+      "audio": "project-assets/audio/05b_company_detail.mp3",
+      "duration": 6.35,
+      "startTime": 161
+    },
+    {
+      "id": "05c_thesis",
+      "text": "La thèse d'investissement générée par l'IA est consultable directement. Elle inclut les risques, les catalyseurs, et une analyse complète.",
+      "audio": "project-assets/audio/05c_thesis.mp3",
+      "duration": 7.71,
+      "startTime": 178
+    },
+    {
+      "id": "05e_versioning",
+      "text": "Un historique des versions permet de suivre l'évolution de votre thèse d'investissement dans le temps.",
+      "audio": "project-assets/audio/05e_versioning.mp3",
+      "duration": 4.75,
+      "startTime": 196
+    },
+    {
+      "id": "05d_kpis",
+      "text": "Les KPIs de surveillance sont extraits automatiquement. Vous pouvez les modifier, ajouter vos propres critères, et ajuster les priorités selon votre conviction.",
+      "audio": "project-assets/audio/05d_kpis.mp3",
+      "duration": 8.91,
+      "startTime": 205
+    },
+    {
+      "id": "05f_company_strategy",
+      "text": "La stratégie de cette entreprise vous permet de personnaliser la recherche et les KPIs spécifiques à surveiller.",
+      "audio": "project-assets/audio/05f_company_strategy.mp3",
+      "duration": 6.61,
+      "startTime": 224
+    },
+    {
+      "id": "05g_directives",
+      "text": "Vous pouvez ajouter des directives de recherche personnalisées. Par exemple, demander à l'agent de surveiller spécifiquement certaines sources ou thématiques.",
+      "audio": "project-assets/audio/05g_directives.mp3",
+      "duration": 7.97,
+      "startTime": 236
+    },
+    {
+      "id": "06_general_strategy",
+      "text": "Passons à la page stratégie générale. Ici vous gérez l'ensemble de vos paramètres de surveillance et KPIs globaux.",
+      "audio": "project-assets/audio/06_general_strategy.mp3",
+      "duration": 6.61,
+      "startTime": 247
+    },
+    {
+      "id": "07_news_search",
+      "text": "Lançons maintenant une recherche d'actualités par l'agent IA. L'agent autonome parcourt le web, filtre les sources pertinentes, et enrichit chaque article.",
+      "audio": "project-assets/audio/07_news_search.mp3",
+      "duration": 8.75,
+      "startTime": 285
+    },
+    {
+      "id": "07b_agent_analysis",
+      "text": "L'agent analyse le contenu, extrait les entités clés, et évalue l'impact sur votre thèse d'investissement. Le tout en quelques secondes.",
+      "audio": "project-assets/audio/07b_agent_analysis.mp3",
+      "duration": 7.39,
+      "startTime": 305
+    },
+    {
+      "id": "07c_results",
+      "text": "Les résultats sont automatiquement classés par pertinence et matérialité. Vous ne manquez plus aucune information critique.",
+      "audio": "project-assets/audio/07c_results.mp3",
+      "duration": 6.03,
+      "startTime": 328
+    },
+    {
+      "id": "08_scoring",
+      "text": "Passons au scoring. Cette vue classe toutes vos entreprises selon un score composite. Vous pouvez ajuster les pondérations entre score technique, fondamental, actualités et thèse.",
+      "audio": "project-assets/audio/08_scoring.mp3",
+      "duration": 11.23,
+      "startTime": 369
+    },
+    {
+      "id": "08b_score_details",
+      "text": "Le score technique analyse les tendances de prix et les volumes. Le score fondamental évalue la santé financière. Le score actualités reflète le sentiment récent.",
+      "audio": "project-assets/audio/08b_score_details.mp3",
+      "duration": 10.11,
+      "startTime": 391
+    },
+    {
+      "id": "08c_score_explore",
+      "text": "Chaque composante du score peut être explorée en détail pour comprendre ce qui influence la note globale.",
+      "audio": "project-assets/audio/08c_score_explore.mp3",
+      "duration": 5.15,
+      "startTime": 408
+    },
+    {
+      "id": "09_rebalancing",
+      "text": "Voici les signaux de rééquilibrage. L'algorithme suggère d'ajouter les entreprises performantes et de réduire celles qui sous-performent.",
+      "audio": "project-assets/audio/09_rebalancing.mp3",
+      "duration": 7.39,
+      "startTime": 442
+    },
+    {
+      "id": "09b_correlations",
+      "text": "Les corrélations entre positions sont prises en compte pour optimiser la diversification de votre portefeuille.",
+      "audio": "project-assets/audio/09b_correlations.mp3",
+      "duration": 5.72,
+      "startTime": 460
+    },
+    {
+      "id": "10_risk",
+      "text": "La page risque identifie les clusters de concentration. Si plusieurs positions dépendent d'un même catalyseur, vous êtes alerté.",
+      "audio": "project-assets/audio/10_risk.mp3",
+      "duration": 6.92,
+      "startTime": 493
+    },
+    {
+      "id": "11_profile",
+      "text": "Les paramètres vous permettent de personnaliser votre expérience : période d'analyse, régions préférées, et sources d'actualités prioritaires.",
+      "audio": "project-assets/audio/11_profile.mp3",
+      "duration": 7.31,
+      "startTime": 524
+    },
+    {
+      "id": "12_wrapup",
+      "text": "Et voilà un tour complet de Bubble Analyst. L'application est également disponible sur mobile, pour suivre vos investissements où que vous soyez.",
+      "audio": "project-assets/audio/12_wrapup.mp3",
+      "duration": 6.84,
+      "startTime": 546
+    },
+    {
+      "id": "13_outro",
+      "text": "Bubble Analyst, l'intelligence artificielle au service de vos investissements.",
+      "audio": "project-assets/audio/13_outro.mp3",
+      "duration": 3.87,
+      "startTime": 569
+    }
+  ]
+}

@@ -57,7 +57,12 @@ import * as Music from './services/music.js';
  * @param projectName - Project name for isolation (default: "default")
  * @returns Path to final rendered video
  */
-export async function generateVideo(projectName: string = 'default'): Promise<string> {
+export interface GenerateOptions {
+  /** Skip the final Remotion render. Only generates assets + props.json for Studio preview. */
+  prepareOnly?: boolean;
+}
+
+export async function generateVideo(projectName: string = 'default', options: GenerateOptions = {}): Promise<string> {
   console.log('\n🎬 Bubble Video Engine - TypeScript Orchestrator\n');
   console.log(`Project: ${projectName}`);
   console.log('─'.repeat(60));
@@ -146,7 +151,7 @@ export async function generateVideo(projectName: string = 'default'): Promise<st
 
   if (config.enable_background_music) {
     try {
-      const musicPath = await Music.selectTrack(config.music_mood, config.music_dir);
+      const musicPath = await Music.selectTrack(config.music_mood, path.dirname(config.music_dir));
       if (musicPath) {
         backgroundMusicPath = musicPath;
         console.log(`   ✅ Selected: ${path.basename(musicPath)}`);
@@ -232,6 +237,7 @@ export async function generateVideo(projectName: string = 'default'): Promise<st
       ...inputProps.config,
       pexels_api_key: '',
       openrouter_api_key: '',
+      openai_api_key: undefined,
       elevenlabs_api_key: undefined,
       heygen_api_key: undefined,
     },
@@ -244,7 +250,27 @@ export async function generateVideo(projectName: string = 'default'): Promise<st
   console.log(`   Total content duration: ${totalDuration.toFixed(1)}s`);
   console.log(`   Number of scenes: ${scenes.length}`);
 
-  // Step 7: Render video with Remotion
+  // Step 7: Render video with Remotion (skip in prepare-only mode)
+  if (options.prepareOnly) {
+    const endTime = Date.now();
+    const elapsedSeconds = (endTime - startTime) / 1000;
+
+    console.log('\n' + '═'.repeat(60));
+    console.log('✅ ASSETS PREPARED FOR STUDIO PREVIEW');
+    console.log('═'.repeat(60));
+    console.log(`📂 Props: public/props.json`);
+    console.log(`📂 Assets: public/project-assets/ → ${config.assets_dir}`);
+    console.log(`⏱️  Total time: ${formatDuration(elapsedSeconds)}`);
+    console.log(`📊 Stats:`);
+    console.log(`   - Scenes: ${scenes.length}`);
+    console.log(`   - Duration: ${totalDuration.toFixed(1)}s`);
+    console.log(`   - Script lines: ${scriptLines.length}`);
+    console.log('\n💡 Next: run "npm run dev" to preview in Remotion Studio');
+    console.log('═'.repeat(60) + '\n');
+
+    return config.final_video_path;
+  }
+
   console.log('\n🎥 Step 7: Rendering final video...');
   const finalVideoPath = await renderVideo(inputProps, config.final_video_path);
 
@@ -298,6 +324,28 @@ async function processScriptLine(
     };
   }
 
+  // Handle animated scenes (no video asset, just audio for voiceover)
+  if (line.scene_type === 'animated') {
+    console.log('      Type: Animated scene');
+    const audioPath = path.join(config.assets_dir, 'audio', `audio_${index}.mp3`);
+
+    // Generate audio for voiceover
+    const audioAsset = await generateAudio(line, audioPath, config);
+    console.log(`      ✅ Audio: ${audioAsset.duration.toFixed(1)}s`);
+
+    return {
+      script_line: line,
+      audio: audioAsset,
+      video: {
+        file_path: '', // No video file, animation is rendered by Remotion
+        width: 1920,
+        height: 1080,
+        duration: audioAsset.duration,
+      },
+      output_path: outputPath,
+    };
+  }
+
   // Handle avatar scenes
   if (line.scene_type === 'avatar') {
     console.log('      Type: Avatar (HeyGen)');
@@ -308,12 +356,49 @@ async function processScriptLine(
     } else {
       try {
         const videoPath = path.join(config.assets_dir, 'video', `avatar_${index}.mp4`);
+
+        // Check cache
+        try {
+          const stats = await fs.stat(videoPath);
+          if (stats.size > 10000) {
+            console.log('      ✅ Using cached avatar video');
+            const duration = await getVideoDuration(videoPath);
+            return {
+              script_line: line,
+              audio: {
+                file_path: videoPath,
+                duration,
+                subtitle_path: null,
+                word_timings: null,
+              },
+              video: { file_path: videoPath, width: 1920, height: 1080, duration },
+              output_path: outputPath,
+            };
+          }
+        } catch { /* not cached */ }
+
+        // Generate ElevenLabs audio and upload to HeyGen
+        const avatarAudioPath = path.join(config.assets_dir, 'audio', `avatar_audio_${index}.mp3`);
+        if (!config.elevenlabs_api_key || !config.elevenlabs_voice_id) {
+          throw new Error('ElevenLabs API key and voice ID required for avatar audio');
+        }
+        const audioUrl = await HeyGen.generateAndUploadAudio(
+          line.text,
+          avatarAudioPath,
+          config.elevenlabs_api_key,
+          config.elevenlabs_voice_id,
+          config.heygen_api_key,
+        );
+
+        // Use per-scene avatar_id if specified, otherwise fall back to default
+        const avatarId = line.avatar_id || config.heygen_default_avatar_id;
+
         const videoAsset = await HeyGen.generateAvatar(
           line.text,
           videoPath,
           config.heygen_api_key,
-          config.heygen_default_avatar_id,
-          config.heygen_default_voice_id
+          avatarId,
+          audioUrl,
         );
 
         console.log(`      ✅ Avatar generated: ${videoAsset.duration?.toFixed(1)}s`);
@@ -387,13 +472,15 @@ async function generateAudio(
       return await EdgeTTS.generateSpeech(line.text, outputPath);
 
     case 'openai':
-    default:
+    default: {
+      const apiKey = config.openai_api_key || config.openrouter_api_key;
       return await OpenAITTS.generateSpeech(
         line.text,
         outputPath,
-        config.openrouter_api_key,
+        apiKey,
         config.audio.tts_voice
       );
+    }
   }
 }
 
@@ -466,6 +553,8 @@ function parseScriptJson(rawData: unknown): ScriptLine[] {
       highlight_word: item.highlight_word ?? null,
       custom_media_path: item.custom_media_path ?? null,
       voice_id: item.voice_id ?? null,
+      avatar_id: item.avatar_id ?? null,
+      animation: item.animation ?? null,
     };
   });
 }

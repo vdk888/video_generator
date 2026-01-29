@@ -34,9 +34,13 @@ Item Types:
 2.  \`{"type": "speech", "text": "...", "search_query": "...", "highlight_word": "...", "scene_type": "broll"}\` -> For narration.
 
 # FIELD GUIDELINES
-1.  **Rhythm (Segmentation)**:
-    -   Break speech into SHORT segments (1-2 sentences max).
-    -   **Mix Durations**: Fast (1s) vs Slow (4s).
+1.  **Rhythm (Segmentation)** — THIS IS THE MOST IMPORTANT RULE:
+    -   Break speech into VERY SHORT segments: **ONE sentence max per segment**.
+    -   Target **1 to 3 seconds** of spoken audio per segment (5-20 words).
+    -   A single long sentence MUST be split into 2-3 segments.
+    -   NEVER combine two sentences into one segment.
+    -   **Mix Durations**: Punch lines = 1-2s, Explanations = 2-3s. Never exceed 4s.
+    -   More segments = better. 30+ segments for a 2-minute video is normal.
 
 2.  **Visual Imagination (\`search_query\`)**:
     -   Describe the *feeling* or *metaphor*, not just the noun.
@@ -44,15 +48,22 @@ Item Types:
     -   **NO GENERIC TERMS**.
 
 3.  **Dramatic Highlights (\`highlight_word\`)**:
-    -   **SPARSE**: Only 1 in 5 segments.
-    -   Trigger: Mind-blowing stats, Key Dates, or Central Metaphors.
-    -   If normal narration, use \`null\`.
-    -   The word must be in the spoken text.
+    -   **SPARSE**: Only 1 in 4 segments. Most segments should be \`null\`.
+    -   **ONLY use for**: Specific numbers/dates ("2012", "100 millions"), brand names ("ChatGPT", "Google"), or short punchy phrases (2-4 words max, e.g. "Deep Learning", "ère générative").
+    -   **NEVER use** generic single words like "voir", "parler", "crée", "maths", "contexte". These are NOT impactful.
+    -   The highlight must be a phrase that SLAMS on screen and makes the viewer go "wow". Think billboard, not dictionary.
+    -   The phrase must appear verbatim in the spoken text.
+    -   If the segment has no mind-blowing stat, date, or key concept, use \`null\`.
 
 4.  **Scene Type (\`scene_type\`)**:
-    -   "broll" (default): Stock footage for illustrations
-    -   "avatar": AI talking head for personal moments
-    -   "kinetic": Big text overlay for stats/dates
+    -   "broll" (default, ~80%): Stock footage for illustrations
+    -   "avatar" (~15-20%): AI talking head for personal, direct-to-camera moments. Use for:
+        - The hook/opening line (builds connection)
+        - Personal opinions or "let me explain" moments
+        - Transitions between parts ("Maintenant, parlons de...")
+        - The conclusion/CTA
+        Do NOT use for factual exposition — that's broll territory.
+    -   "kinetic": Big text overlay for stats/dates (rarely used, prefer highlight_word on broll)
     -   "title": Part transitions (automatic for type="title")
 
 # FORMAT EXAMPLE

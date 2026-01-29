@@ -3,7 +3,7 @@
  * Per VIDEO_BIBLE.md: Multi-stage animation with logo, CTA, accent line
  *
  * Animation sequence:
- * 1. Logo visible from start (full opacity)
+ * 1. Logo animation plays (supports video or image)
  * 2. CTA text slides up (frames 5-25)
  * 3. Accent line draws in (frames 20-40)
  * 4. Everything fades out (last 15 frames)
@@ -13,6 +13,7 @@ import React from 'react';
 import {
   AbsoluteFill,
   Img,
+  Video,
   staticFile,
   useCurrentFrame,
   interpolate,
@@ -22,12 +23,14 @@ import { INTRO_OUTRO, FONTS, COLORS } from '../brand';
 
 export interface BrandedOutroProps {
   logoPath?: string | null;
+  logoVideoPath?: string | null; // For animated logo (mov/mp4)
   ctaText?: string | null;
   duration?: number; // in frames
 }
 
 export const BrandedOutro: React.FC<BrandedOutroProps> = ({
   logoPath,
+  logoVideoPath,
   ctaText,
   duration = 75, // 3s at 25fps
 }) => {
@@ -65,6 +68,13 @@ export const BrandedOutro: React.FC<BrandedOutroProps> = ({
     extrapolateRight: 'clamp',
   });
 
+  // Determine if we have an animated logo
+  const hasVideoLogo = logoVideoPath && (
+    logoVideoPath.endsWith('.mov') ||
+    logoVideoPath.endsWith('.mp4') ||
+    logoVideoPath.endsWith('.webm')
+  );
+
   return (
     <AbsoluteFill
       style={{
@@ -83,8 +93,16 @@ export const BrandedOutro: React.FC<BrandedOutroProps> = ({
           gap: 30,
         }}
       >
-        {/* Stage 1: Logo (visible from start) */}
-        {logoPath ? (
+        {/* Stage 1: Logo (video animation, static image, or text fallback) */}
+        {hasVideoLogo ? (
+          <Video
+            src={staticFile(logoVideoPath!)}
+            style={{
+              width: INTRO_OUTRO.LOGO_WIDTH * 1.5,
+              height: 'auto',
+            }}
+          />
+        ) : logoPath ? (
           <Img
             src={staticFile(logoPath)}
             style={{

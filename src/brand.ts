@@ -319,6 +319,49 @@ export const BROLL = {
 } as const;
 
 // ============================================================================
+// HIGHLIGHT/DRAMATIC EFFECTS
+// ============================================================================
+
+/**
+ * Highlight Flash effect configuration per VIDEO_BIBLE.md Section 9
+ * TikTok-style dramatic emphasis moments
+ */
+export const HIGHLIGHT_EFFECTS = {
+  // Flash
+  FLASH_OPACITY_PEAK: 1.0,
+  FLASH_DURATION: 0.12, // seconds
+
+  // Background dim
+  BACKGROUND_DIM: 0.85,
+
+  // Screen shake
+  SHAKE_INTENSITY: 25, // pixels
+  SHAKE_DURATION: 0.15, // seconds
+
+  // Text animation
+  TEXT_SCALE_OVERSHOOT: 1.35, // initial scale before spring settle
+  TEXT_FONT_SIZE: 220, // px - larger than kinetic
+  TEXT_FONT_WEIGHT: 900, // max boldness
+
+  // Color pop (violet flash after white)
+  COLOR_POP_OPACITY: 0.3,
+  COLOR_POP_COLOR: 'rgba(102, 126, 234, 1)',
+
+  // Zoom punch on B-roll
+  ZOOM_PUNCH_AMOUNT: 1.08, // 8% zoom in
+
+  // Text glow layers
+  TEXT_GLOW: `
+    0 0 10px rgba(255, 255, 255, 1),
+    0 0 30px rgba(102, 126, 234, 1),
+    0 0 60px rgba(102, 126, 234, 0.8),
+    0 0 120px rgba(102, 126, 234, 0.5),
+    0 8px 40px rgba(0, 0, 0, 0.6),
+    0 0 200px rgba(102, 126, 234, 0.3)
+  `,
+} as const;
+
+// ============================================================================
 // TYPE EXPORTS
 // ============================================================================
 

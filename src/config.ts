@@ -43,6 +43,7 @@ const envSchema = z.object({
   MUSIC_MOOD: z.string().default('ambient_cinematic'),
 
   // Optional (no defaults)
+  OPENAI_API_KEY: z.string().optional(),
   ELEVENLABS_API_KEY: z.string().optional(),
   ELEVENLABS_VOICE_ID: z.string().optional(),
   HEYGEN_API_KEY: z.string().optional(),
@@ -118,7 +119,7 @@ function buildAudioConfig(env: EnvSchema): AudioConfig {
     tts_provider: env.TTS_PROVIDER,
     tts_voice: env.TTS_PROVIDER === 'elevenlabs'
       ? env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL'
-      : 'alloy',
+      : 'onyx', // Deep masculine voice — best for energetic narration
     sample_rate: 48000,
     channels: 2,
     background_music_volume: -20,
@@ -163,6 +164,7 @@ export function loadConfig(projectName: string = 'default'): ProjectConfig {
     openrouter_api_key: env.OPENROUTER_API_KEY,
 
     // API Keys (optional)
+    openai_api_key: env.OPENAI_API_KEY,
     elevenlabs_api_key: env.ELEVENLABS_API_KEY,
     heygen_api_key: env.HEYGEN_API_KEY,
 

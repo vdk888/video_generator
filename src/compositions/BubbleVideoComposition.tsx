@@ -13,13 +13,47 @@ import {
   useVideoConfig,
   interpolate,
 } from 'remotion';
-import { TransitionSeries, linearTiming } from '@remotion/transitions';
+import { TransitionSeries, linearTiming, springTiming } from '@remotion/transitions';
 import { fade } from '@remotion/transitions/fade';
+import { slide } from '@remotion/transitions/slide';
+import { wipe } from '@remotion/transitions/wipe';
 import { BrandedIntro } from './BrandedIntro';
 import { BrandedOutro } from './BrandedOutro';
 import { SceneRouter } from './SceneRouter';
 import { COLORS, TIMING, dbToLinear, secondsToFrames } from '../brand';
-import type { BubbleVideoInputProps } from '../types';
+import type { BubbleVideoInputProps, Scene } from '../types';
+
+/**
+ * Helper to select transition presentation based on scene type pair
+ * Kinetic cuts hard, title cards use wipes/slides for energy
+ */
+function getTransitionPresentation(
+  currentScene: Scene,
+  nextScene: Scene,
+  width: number,
+  height: number,
+): any {
+  const currentType = currentScene.script_line.scene_type;
+  const nextType = nextScene.script_line.scene_type;
+
+  // Kinetic cuts in hard — no transition (use very fast fade as approximation)
+  if (nextType === 'kinetic') {
+    return fade();
+  }
+
+  // Into title card: clean editorial wipe
+  if (nextType === 'title') {
+    return wipe({ direction: 'from-left' });
+  }
+
+  // Out of title card: slide with energy
+  if (currentType === 'title') {
+    return slide({ direction: 'from-right' });
+  }
+
+  // Default: fade
+  return fade();
+}
 
 export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
   scenes,
@@ -28,7 +62,7 @@ export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
   music_volume,
   config,
 }) => {
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
 
   // Calculate durations using brand constants
   const introDuration = secondsToFrames(config.timing.intro_duration[0], fps); // 3s default
@@ -67,8 +101,19 @@ export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
                 </TransitionSeries.Sequence>
                 {index < scenes.length - 1 && (
                   <TransitionSeries.Transition
-                    presentation={fade()}
-                    timing={linearTiming({ durationInFrames: transitionFrames })}
+                    presentation={getTransitionPresentation(
+                      scenes[index],
+                      scenes[index + 1],
+                      width,
+                      height
+                    )}
+                    timing={
+                      scenes[index + 1].script_line.scene_type === 'kinetic'
+                        ? linearTiming({ durationInFrames: Math.round(transitionFrames / 3) }) // Kinetic cuts fast
+                        : scenes[index + 1].script_line.scene_type === 'title'
+                          ? springTiming({ config: { damping: 200 }, durationInFrames: transitionFrames }) // Smooth for titles
+                          : springTiming({ config: { damping: 20, stiffness: 200 }, durationInFrames: transitionFrames }) // Snappy for content
+                    }
                   />
                 )}
               </React.Fragment>
@@ -87,7 +132,10 @@ export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
         <BackgroundMusic
           musicPath={background_music_path}
           volume={musicVolumeLinear}
-          durationInFrames={durationInFrames}
+          totalDurationFrames={durationInFrames}
+          scenes={scenes}
+          sceneDurations={sceneDurations}
+          introFrames={introDuration}
           fps={fps}
         />
       )}
@@ -96,96 +144,84 @@ export const BubbleVideoComposition: React.FC<BubbleVideoInputProps> = ({
 };
 
 /**
- * BackgroundMusic - Component for background music with fade in/out
+ * BackgroundMusic - Component for background music with fade in/out and ducking
+ * Uses single Audio element with frame-based volume callback
  */
 interface BackgroundMusicProps {
   musicPath: string;
-  volume: number;
-  durationInFrames: number;
+  volume: number; // base volume (linear, e.g. 0.1)
+  totalDurationFrames: number;
+  scenes: Scene[];
+  sceneDurations: number[];
+  introFrames: number;
   fps: number;
 }
 
 const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
   musicPath,
-  volume,
-  durationInFrames,
+  volume: baseVolume,
+  totalDurationFrames,
+  scenes,
+  sceneDurations,
+  introFrames,
   fps,
 }) => {
-  const frame = React.useRef(0);
+  const fadeInFrames = Math.round(fps * 1.5); // 1.5s fade in
+  const fadeOutFrames = Math.round(fps * 2); // 2s fade out
 
-  // Fade duration from brand constants: 2 seconds (50 frames at 25fps)
-  const fadeDuration = secondsToFrames(TIMING.MUSIC_FADE_DURATION, fps);
-
-  // Calculate dynamic volume based on frame
-  const getDynamicVolume = (currentFrame: number): number => {
-    // Fade in
-    if (currentFrame < fadeDuration) {
-      const fadeInProgress = interpolate(
-        currentFrame,
-        [0, fadeDuration],
-        [0, 1],
-        { extrapolateRight: 'clamp' }
-      );
-      return volume * fadeInProgress;
-    }
-
-    // Fade out
-    const fadeOutStart = durationInFrames - fadeDuration;
-    if (currentFrame > fadeOutStart) {
-      const fadeOutProgress = interpolate(
-        currentFrame,
-        [fadeOutStart, durationInFrames],
-        [1, 0],
-        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-      );
-      return volume * fadeOutProgress;
-    }
-
-    // Normal volume
-    return volume;
-  };
-
-  // Note: Remotion's Audio component doesn't support dynamic volume changes per frame
-  // We'll use a constant volume here, and handle fade in/out via multiple Audio sequences
+  // Pre-compute scene timeline for ducking
+  const sceneTimeline: Array<{ start: number; end: number; type: string }> = [];
+  let offset = introFrames;
+  for (let i = 0; i < scenes.length; i++) {
+    const dur = sceneDurations[i];
+    sceneTimeline.push({
+      start: offset,
+      end: offset + dur,
+      type: scenes[i].script_line.scene_type,
+    });
+    offset += dur;
+  }
 
   return (
-    <>
-      {/* Fade in segment */}
-      <Sequence durationInFrames={fadeDuration}>
-        <Audio
-          src={staticFile(musicPath)}
-          volume={(f) =>
-            interpolate(f, [0, fadeDuration], [0, volume], {
-              extrapolateRight: 'clamp',
-            })
-          }
-        />
-      </Sequence>
+    <Audio
+      src={staticFile(musicPath)}
+      volume={(f) => {
+        // Fade in
+        const fadeIn = interpolate(f, [0, fadeInFrames], [0, baseVolume], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
+        // Fade out
+        const fadeOut = interpolate(
+          f,
+          [totalDurationFrames - fadeOutFrames, totalDurationFrames],
+          [baseVolume, 0],
+          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+        );
 
-      {/* Full volume segment */}
-      <Sequence
-        from={fadeDuration}
-        durationInFrames={durationInFrames - 2 * fadeDuration}
-      >
-        <Audio
-          src={staticFile(musicPath)}
-          volume={volume}
-          startFrom={Math.floor(fadeDuration)}
-        />
-      </Sequence>
-
-      {/* Fade out segment */}
-      <Sequence from={durationInFrames - fadeDuration}>
-        <Audio
-          src={staticFile(musicPath)}
-          volume={(f) =>
-            interpolate(f, [0, fadeDuration], [volume, 0], {
+        // Ducking: reduce volume during avatar and kinetic scenes
+        let duckFactor = 1.0;
+        const rampFrames = 8;
+        for (const seg of sceneTimeline) {
+          if (seg.type === 'avatar' || seg.type === 'kinetic') {
+            // Ramp down entering ducked scene
+            const duckDown = interpolate(f, [seg.start - rampFrames, seg.start], [1.0, 0.3], {
+              extrapolateLeft: 'clamp',
               extrapolateRight: 'clamp',
-            })
+            });
+            // Ramp up leaving ducked scene
+            const duckUp = interpolate(f, [seg.end, seg.end + rampFrames], [0.3, 1.0], {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            });
+            if (f >= seg.start - rampFrames && f < seg.end + rampFrames) {
+              duckFactor = Math.min(duckFactor, Math.min(duckDown, duckUp));
+            }
           }
-          startFrom={Math.floor(durationInFrames - fadeDuration)}
-        />
-      </Sequence>
-    </>
+        }
+
+        return Math.min(fadeIn, fadeOut) * duckFactor;
+      }}
+    />
   );
 };

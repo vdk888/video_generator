@@ -19,8 +19,10 @@ A zero-edit AI video pipeline producing broadcast-quality content:
 - `docs/SETUP_GUIDE.md` - Installation and setup instructions
 - `docs/ARCHITECTURE_FLOW.md` - Technical architecture and pipeline flow
 - `docs/REMOTION_COMPONENTS_GUIDE.md` - Remotion composition reference
+- `docs/REMOTION_SKILLS.md` - Animation, timing, transitions, audio best practices
 
 ## Commands
+- **Prepare Assets**: `npm run prepare -- --project=myproject` (Generates TTS audio, B-roll, props.json — no render)
 - **Development Studio**: `npm run dev` (Opens Remotion Studio for preview and editing)
 - **Render Video**: `npm run render` (Renders video using `default` project)
 - **Render Specific Project**: `npm run render -- --project=myproject`
@@ -145,10 +147,10 @@ ls projects/myproject/final_output.mp4
 
 ## Development Workflow
 1. **Write Script**: Create `raw_source.txt` or `script.json` in project folder
-2. **Render**: `npm run render -- --project=myproject` (generates assets, audio, video + saves `public/props.json` for preview)
+2. **Prepare**: `npm run prepare -- --project=myproject` (generates TTS audio, B-roll, saves `public/props.json`)
 3. **Preview in Studio**: `npm run dev` → open localhost:3000 (Studio auto-loads props.json with real scene data)
 4. **Iterate Visuals**: Edit compositions in `src/compositions/`, see changes live in Studio with real content
-5. **Re-render**: Run `npm run render` again after script/composition changes
+5. **Render**: `npm run render -- --project=myproject` (full render to MP4 when satisfied)
 6. **Review**: Check `projects/myproject/final_output.mp4`
 
 ### Studio Preview Details

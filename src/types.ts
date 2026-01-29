@@ -4,9 +4,18 @@
  */
 
 // Scene Types
-export type SceneType = 'broll' | 'avatar' | 'title' | 'kinetic';
+export type SceneType = 'broll' | 'avatar' | 'title' | 'kinetic' | 'animated';
 export type LineType = 'speech' | 'title';
 export type TTSProvider = 'openai' | 'elevenlabs' | 'edge';
+
+/**
+ * Animation configuration for animated scenes
+ * See docs/ANIMATION_COMPONENTS.md for full reference
+ */
+export interface AnimationConfig {
+  type: string;
+  params: Record<string, any>;
+}
 
 /**
  * Represents a single line in the script with associated metadata
@@ -20,6 +29,9 @@ export interface ScriptLine {
   scene_type: SceneType;
   custom_media_path?: string | null;
   voice_id?: string | null;
+  avatar_id?: string | null;
+  /** Animation config for scene_type: "animated" */
+  animation?: AnimationConfig | null;
 }
 
 /**
@@ -131,6 +143,7 @@ export interface ProjectConfig {
   openrouter_api_key: string;
 
   // API Keys (optional)
+  openai_api_key?: string;
   elevenlabs_api_key?: string;
   heygen_api_key?: string;
 

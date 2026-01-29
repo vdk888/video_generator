@@ -16,10 +16,13 @@ async function main() {
     // Parse command line arguments
     const args = process.argv.slice(2);
     let projectName = 'default';
+    let prepareOnly = false;
 
     for (const arg of args) {
       if (arg.startsWith('--project=')) {
         projectName = arg.split('=')[1];
+      } else if (arg === '--prepare') {
+        prepareOnly = true;
       } else if (arg === '--help' || arg === '-h') {
         printUsage();
         process.exit(0);
@@ -27,7 +30,7 @@ async function main() {
     }
 
     // Run the orchestrator
-    const outputPath = await generateVideo(projectName);
+    const outputPath = await generateVideo(projectName, { prepareOnly });
 
     // Success
     const elapsedSeconds = (Date.now() - startTime) / 1000;
@@ -67,9 +70,11 @@ Bubble Video Engine - TypeScript Edition
 USAGE:
   npm run render                       Generate video for default project
   npm run render -- --project=NAME     Generate video for specific project
+  npm run prepare -- --project=NAME    Generate assets + preview only (no render)
 
 OPTIONS:
   --project=NAME    Project name (creates folder: projects/NAME)
+  --prepare         Only generate assets and props.json (skip final render)
   --help, -h        Show this help message
 
 ENVIRONMENT:

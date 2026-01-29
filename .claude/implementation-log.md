@@ -64,6 +64,17 @@
   - `getVideoDuration(filePath)`, `getVideoDimensions(filePath)`, `getVideoFrameRate(filePath)`
 
 ## Recent Changes
+- [2026-01-27]: Enhanced Title Cards & Kinetic Typography Visual Impact
+  - Modified: src/compositions/TitleCard.tsx - Bigger word animation (translateY 50→0, scaleY 0.7→1.0), wider accent line (160px×3px with glow), subtle gradient background
+  - Modified: src/compositions/KineticTypography.tsx - Progressive background dimming (1.0→0.6) + blur (0→3px over 15 frames), bigger text entrance (blur 12→0 over 12 frames, translateY 60→0 over 18 frames), stronger glow (3-layer shadow), stronger pulse (0.025 amplitude, slower 0.06 frequency)
+  - Title card word stagger: 50px vertical movement + vertical squash (0.7→1.0) creates dramatic "stretch-in" effect
+  - Title card accent line: 160px wide, 3px thick, violet glow (boxShadow 20px rgba violet)
+  - Title card background: radial-gradient from white to #F5F5FA for subtle depth
+  - Kinetic background animation: Animated dimming/blur instead of static (more cinematic scene transition)
+  - Kinetic text entrance: 3x stronger initial blur (12px), 2x bigger slide (60px), more dramatic snap-in
+  - Kinetic text glow: 3 shadow layers (base + 60px + 120px) for intense violet halo
+  - Kinetic pulse: 67% stronger (0.025 vs 0.015), 25% slower (0.06 vs 0.08) for visible breathing
+  - All values maintain brand compliance (violet #667eea, Inter font)
 - [2026-01-27]: Enhanced B-Roll Visual Impact - Alternating Ken Burns, Entrance Flash, Vignette
   - Modified: src/brand.ts - Updated BROLL constants (CONTRAST: 1.08, SATURATION: 1.15, BRIGHTNESS: 1.03, KEN_BURNS_SCALE_START: 1.12, KEN_BURNS_SCALE_END: 1.0, TRANSLATE_MAX: 30px, VIGNETTE_OPACITY: 0.3)
   - Modified: src/compositions/BRollScene.tsx - Alternating Ken Burns direction + entrance flash + vignette

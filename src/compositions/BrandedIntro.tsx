@@ -96,13 +96,13 @@ export const BrandedIntro: React.FC<BrandedIntroProps> = ({
               }}
             />
           ) : (
-            // Fallback: Text-only logo using brand constants
+            // Fallback: Text-only logo - BLACK per brand guidelines
             <div
               style={{
                 fontSize: INTRO_OUTRO.LOGO_TEXT_SIZE,
                 fontFamily: FONTS.FAMILY,
                 fontWeight: INTRO_OUTRO.LOGO_TEXT_WEIGHT,
-                color: INTRO_OUTRO.LOGO_TEXT_COLOR,
+                color: COLORS.PRIMARY_TEXT, // Black, not violet
                 letterSpacing: INTRO_OUTRO.LOGO_TEXT_SPACING,
               }}
             >

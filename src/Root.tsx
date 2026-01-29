@@ -8,6 +8,8 @@ import React from 'react';
 import { Composition, staticFile } from 'remotion';
 import { loadFont } from '@remotion/google-fonts/Inter';
 import { BubbleVideo } from './BubbleVideo';
+import { DemoVoiceoverFromFile } from './compositions/DemoVoiceover';
+import { DemoWithBranding } from './compositions/DemoWithBranding';
 import type { BubbleVideoInputProps, BubbleVideoMetadata } from './types';
 
 // Load Inter font with required weights per Charte Graphique
@@ -147,6 +149,22 @@ export const RemotionRoot: React.FC = () => {
         component={BubbleVideo as any}
         calculateMetadata={calculateBubbleMetadata as any}
         defaultProps={defaultInputProps as any}
+      />
+      <Composition
+        id="DemoVoiceover"
+        component={DemoVoiceoverFromFile}
+        durationInFrames={575 * 25} // ~575 seconds at 25fps
+        fps={25}
+        width={1920}
+        height={1080}
+      />
+      <Composition
+        id="DemoWithBranding"
+        component={DemoWithBranding}
+        durationInFrames={Math.round((3 + 575/1.15 + 6) * 25)} // intro + video@1.15x + outro (6s for logo anim)
+        fps={25}
+        width={1920}
+        height={1080}
       />
     </>
   );
